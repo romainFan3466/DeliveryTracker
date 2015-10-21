@@ -1,0 +1,38 @@
+{
+  "name": "delivery_tracker",
+  "version": "0.0.0",
+  "authors": [
+    "Romain Fanara <romain.fanara@gmail.com>"
+  ],
+  "description": "Delivery Tracker Project",
+  "main": "",
+  "moduleType": [
+    "node"
+  ],
+  "keywords": [
+    "delivey",
+    "tracker"
+  ],
+  "dependencies": {
+    "angular": "~1.4.7",
+    "bootstrap": "~3.3.5",
+    "angular-route": "~1.4.7",
+    "angular-resource": "~1.4.7",
+    "fontawesome": "~4.3.0",
+    "angular-animate": "~1.4.7",
+    "angular-mocks": "~1.4.7",
+    "angular-filter": "~0.5.7",
+    "ngstorage": "~0.3.9",
+    "font-awesome": "fontawesome#~4.4.0"
+  },
+  "devDependencies": {},
+  "license": "GNU-3.0",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
