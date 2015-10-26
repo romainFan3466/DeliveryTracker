@@ -5,6 +5,7 @@ class Delivery:
     datePickup = ""
     dateDelivery = ""
     customerID = ""
+    driverID = ""
 
 
 

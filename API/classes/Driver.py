@@ -1,11 +1,10 @@
-class Driver:
-    
-    ID = ""
-    name = ""
-    companyID = ""
+from classes.User import User
+
+
+class Driver(User):
+
+    currentLocation = ""
 
     def __init__(self, ID, name="", companyID=""):
-        self.ID = ID
-        self.name = name
-        self.companyID = companyID
+        User.__init__(self, ID, name, companyID )
 

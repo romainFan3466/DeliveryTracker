@@ -22,7 +22,6 @@
     "grunt-ftpsync": "^0.1.1",
     "grunt-ftpush": "^0.3.3",
     "grunt-karma": "^0.10.1",
-    "grunt-ngdocs": "^0.2.7",
     "grunt-pattern-replace": "^1.0.1",
     "jasmine-core": "^2.2.0",
     "karma": "^0.12.31",

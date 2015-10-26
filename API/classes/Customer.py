@@ -7,5 +7,5 @@ class Customer:
     phone = ""
     city = ""
     country = ""
-    
+
 

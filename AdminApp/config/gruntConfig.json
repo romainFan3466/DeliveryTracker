@@ -1,0 +1,346 @@
+{
+	"bower"         : {
+		"install": {
+			"options": {
+				"targetDir"     : "<%= vendorPath %>",
+				"install"       : true,
+				"cleanTargetDir": false,
+				"copy"          : false,
+				"verbose"       : true,
+				"layout"        : "byComponent",
+                "bowerOptions": {
+                    "allow-root" : true
+                }
+			}
+		}
+	},
+	"less": {
+        "options": {
+            "yuicompress": true,
+            "report": "min"
+        },
+        "app": {
+            "src": [
+               "./app/css/main.less",
+                "<%= vendorPath %>/fontawesome/less/font-awesome.less"
+                ],
+            "dest": "<%= buildPath %>deliveryTracker.min.css"
+        }
+    },
+    "concat": {
+        "app": {
+            "src": [
+                "<%= appPath %>/js/config/application.js",
+                "<%= appPath %>/js/config/constant.js",
+                "<%= appPath %>/js/config/routes.js",
+                "<%= appPath %>/js/directives/**/*.js",
+                "<%= appPath %>/js/mappers/**/*.js",
+                "<%= appPath %>/js/services/**/*.js",
+                "<%= appPath %>/js/controllers/**/*.js"
+
+            ],
+            "dest": "<%= buildPath %>/deliveryTracker-app.js"
+        },
+        "lib": {
+            "src": [
+                "<%= vendorPath %>/angular/angular.min.js",
+                "<%= vendorPath %>/angular-route/angular-route.min.js",
+                "<%= vendorPath %>/angular-animate/angular-animate.min.js",
+                "<%= vendorPath %>/angular-resource/angular-resource.min.js",
+                "<%= vendorPath %>/angular-filter/dist/angular-filter.min.js",
+	            "<%= vendorPath %>/jquery/dist/jquery.js",
+                "<%= vendorPath %>/bootstrap/dist/js/bootstrap.min.js",
+                "<%= vendorPath %>/angular-bootstrap/ui-bootstrap.min.js",
+                "<%= vendorPath %>/angular-bootstrap/ui-bootstrap-tpls.js"
+            ],
+            "dest": "<%= buildPath %>/deliveryTracker-lib.min.js"
+        }
+    },
+    "uglify": {
+        "options": {
+            "mangle": false,
+            "compress": false,
+            "beautify": true,
+            "report": "min"
+        },
+        "app": {
+            "src": "<%= concat.app.dest %>",
+            "dest": "<%= buildPath %>/deliveryTracker-app.min.js"
+        }
+    },
+    "copy": {
+        "default": {
+            "files": [
+                {
+                    "expand": true,
+                    "cwd": "<%= appPath %>/php",
+                    "src": "**/*",
+                    "dest": "<%= buildPath %>/php/"
+                },
+                {
+                    "expand": true,
+                    "cwd": "<%= vendorPath %>",
+                    "src": "{slim,mpdf,phpqrcode,phpseclib}/**/*",
+                    "dest": "<%= buildPath %>/php/"
+                },
+                {
+                    "expand": true,
+                    "cwd": "<%= vendorPath %>/angular-route/",
+                    "src": "angular-route.min.js.map",
+                    "dest": "<%= buildPath %>/js/"
+                },
+                {
+                    "expand": true,
+                    "cwd": "<%= vendorPath %>/angular-resource/",
+                    "src": "angular-resource.min.js.map",
+                    "dest": "<%= buildPath %>/js/"
+                },
+                {
+                    "expand": true,
+                    "cwd": "<%= vendorPath %>/jquery/dist/",
+                    "src": "jquery.min.map",
+                    "dest": "<%= buildPath %>/js/"
+                },
+                {
+                  "expand": true,
+                  "cwd": "./themes/default/localizable/",
+                  "src": "**/*",
+                  "dest": "<%= buildPath %>/js/local/"
+                },
+                {
+                    "expand": true,
+                    "cwd"   : "./themes/default/",
+                    "src"   : ["{images,fonts}**/*"],
+                    "dest"  : "<%= buildPath %>/"
+                },
+                {
+					"expand": true,
+					"cwd"   : "<%= appPath %>",
+					"src"   : ["{templates,views}/**/*"],
+					"dest"  : "<%= buildPath %>/html"
+				},
+                {
+                    "expand": true,
+                    "flatten": true,
+                    "src": ["<%= less.app.dest %>"],
+                    "dest": "<%= buildPath %>/css/"
+                },
+                {
+                    "expand": true,
+                    "cwd": "<%= vendorPath %>/fontawesome/",
+                    "src": "fonts/**/*",
+                    "dest": "<%= buildPath %>/css/"
+                },
+                {
+                    "expand": true,
+                    "flatten": true,
+                    "src": [
+                        "<%= uglify.app.dest %>",
+                        "<%= concat.lib.dest %>"
+                    ],
+                    "dest": "<%= buildPath %>/js/"
+                },
+                {
+                    "expand": true,
+                    "cwd": "<%= appPath %>",
+                    "src": ["index.php"],
+                    "dest": "<%= buildPath %>/"
+                }
+            ]
+        }
+    },
+    "patternReplace": {
+        "default": {
+            "options": {
+                "prefix": "\\[\\[",
+                "suffix": "\\]\\]",
+                "includesDir": "./",
+                "tokens": {
+                    "pkg" : {
+                        "appName" : "<%= pkg.appName %>",
+                        "version" :  "<%= pkg.version %>"
+                    },
+                    "meta"  : {
+                        "title"      : "Vwam App",
+                        "author"     : "Rofa",
+                        "description": "Web washing app by R."
+                    }
+                }
+            },
+            "files": [
+                {
+                    "expand": true,
+                    "cwd": "<%= buildPath %>",
+                    "dest": "<%= buildPath %>",
+                    "src": ["**/*.{js,php,html}"]
+                }
+            ]
+        }
+    },
+    "ftpsync": {
+        "local": "<%= target.local %>",
+        "remote": "<%= target.targetServer %>",
+        "host": "<%= target.targetHost %>",
+        "port": 21,
+        "user": "<%= target.targetUser %>",
+        "pass": "<%= target.targetPwd %>",
+        "connections": 1,
+        "ignore": [
+          ".htaccess",
+          "php/slim/**/*",
+          "php/mpdf/*",
+          "<%= buildPath %>/php"
+        ]
+    },
+  "ftpush": {
+    "build": {
+      "auth": {
+        "host": "<%= target.targetHost %>",
+        "port": 21,
+        "authKey": "key1"
+      },
+      "src":  "<%= target.local %>",
+      "dest": "<%= target.targetServer %>",
+      "exclusions": ["php/mpdf/**/*", "php/phpqrcode/**/*", "php/slim/**/*", "php/slim/**/*", "php/phpseclib/*/**"],
+      "keep": ["/php/.htaccess", "/php/mpdf/**/*", "/php/phpqrcode/**/*", "/php/slim/**/*", "/php/phpseclib/*/**"],
+      "simple": true,
+      "useList": false
+    }
+  },
+    "compress" : {
+		"default": {
+			"options": {
+                    "archive": "dist/snapshot-<%= grunt.template.date('yyyy-mm-dd_HH-MM-ss') %>.zip",
+				"mode"   : "zip",
+				"pretty" : true
+			},
+			"files" : [
+				{
+					"expand" : true,
+					"cwd"    : "<%= buildPath %>/",
+					"src"    : ["**"],
+					"dest"   : "webkiosk-<%= template %>-src"
+				}
+			]
+		}
+	},
+    "clean": {
+        "pre-deploy": [
+            "<%= concat.app.dest %>",
+            "<%= concat.lib.dest %>",
+            "<%= uglify.app.dest %>",
+            "<%= less.app.dest %>"
+        ],
+        "post-deploy": "<%= buildPath %>",
+        "doc": "./docular_generated"
+    },
+	"watch"    : {
+    },
+    "sync": {
+        "main": {
+            "files": [
+                {
+                    "cwd":"./",
+                    "src": [
+                        "**/*",
+                        "!vendors/**/*",
+                        "!nbproject/**/*",
+                        "!gitReposit/**",
+                        "!docular_generated/**",
+                        "!downloaded/**",
+                        "!Documents/**",
+                        "!build/**",
+                        "!.ftppass",
+                        "!node_modules/**/*",
+                        "!bower_components/**/*",
+                        "!config/appConfig.json",
+                        "!application/php/configDB.php",
+                        "!application/php/RSAkey/**/*",
+                        "!themes/default/localizable/local/**/*"
+                    ],
+                    "dest": "./gitReposit"
+                }
+            ],
+            "verbose": true,
+            "pretend": false,
+            "ignoreInDest": [
+                "README.md",
+                ".git",
+                ".git/**/*",
+                "config/appConfig.json",
+                "application/php/configDB.php"
+            ],
+            "updateAndDelete": true
+        }
+    },
+    "ngdocs": {
+        "options": {
+            "dest": "docular_generated",
+            "scripts": [
+                "build/js/Washing-App-lib.min.js",
+                "build/js/Washing-App-app.min.js",
+                "build/js/angular-resource.min.js.map",
+                "build/js/angular-route.min.js.map",
+                "build/js/jquery.min.map"
+            ],
+            "startPage": "/api",
+            "html5Mode": false,
+            "title": "DOC API",
+            "bestMatch": true
+        },
+        "washing-api": {
+            "src": ["docs/api/**/*.ngdoc"],
+            "title": "Washing App API",
+            "api": false
+        },
+        "api": {
+            "src": [
+                "application/services/**/*.js",
+                "application/mappers/**/*.js",
+                "application/directives/**/*.js",
+                "application/filters/**/*.js",
+                "application/controllers/**/*.js"
+            ],
+            "title": "Washing App",
+            "api": true
+        }
+    },
+    "karma": {
+        "options": {
+            "basePath" : "..",
+            "configFile":"<%= configPath %>/config.karma.js",
+            "files" : [
+              "<%= vendorPath %>/angular/angular.js",
+              "<%= vendorPath %>/angular-route/angular-route.js",
+              "<%= vendorPath %>/angular-animate/angular-animate.js",
+              "<%= vendorPath %>/angular-resource/angular-resource.js",
+              "<%= vendorPath %>/angular-mocks/angular-mocks.js",
+              "<%= vendorPath %>/angular-filter/dist/angular-filter.js",
+              "<%= vendorPath %>/angular-cookies/angular-cookies.js",
+              "<%= vendorPath %>/angular-dynamic-locale/dist/tmhDynamicLocale.js",
+              "<%= vendorPath %>/angular-translate/angular-translate.min.js",
+              "<%= vendorPath %>/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js",
+              "<%= vendorPath %>/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js",
+              "<%= vendorPath %>/angular-translate-storage-local/angular-translate-storage-local.min.js",
+              "<%= vendorPath %>/jquery/dist/jquery.js",
+              "<%= vendorPath %>/langSwitcher/js/angular/angular-polyglot.language.switcher.js",
+              "<%= vendorPath %>/bootstrap/dist/js/bootstrap.min.js",
+              "<%= vendorPath %>/angular-bootstrap/ui-bootstrap.min.js",
+              "<%= vendorPath %>/angular-bootstrap/ui-bootstrap-tpls.js",
+              "<%= appPath %>/**/*.js",
+              "./test/**/*.js"
+            ]
+        },
+        "unit": {
+            "autoWatch": true,
+            "singleRun": false,
+            "background": false,
+            "port" : 9877
+        },
+        "continuous": {
+            "background": false,
+            "singleRun": true
+        }
+    }
+}
+
