@@ -2,7 +2,7 @@
 AppModule.config(['$routeProvider', function ($routeProvider) {
 	var routes = [
 		{url: "/login", templateUrl: "templates/login.view.html"},
-        {url: "/home", templateUrl: "templates/home.view.html"},
+        {url: "/home", templateUrl: "templates/home.template.html"},
         {url: "/settings", templateUrl: "templates/settings.view.html"}
 	];
 

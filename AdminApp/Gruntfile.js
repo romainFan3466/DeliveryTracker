@@ -1,13 +1,13 @@
 // Requirements.
-var generator = require("./config/generator");
+//var generator = require("./config/generator");
 //var _ = require("lodash");
 
 module.exports = function (grunt) {
 
 	// Paths.
-	var buildPath = "./build";
+	var buildPath = "./app";
 	var configPath = "./config";
-    var appPath = "./application";
+    var appPath = "./app";
     var vendorPath = "./vendors";
 
 	// CLI Asked tasks.
@@ -24,7 +24,7 @@ module.exports = function (grunt) {
 
 
 	// Load and parse the app locale config file.
-	var appConfig = grunt.file.readJSON(configPath + "/appConfig.json");
+	//var appConfig = grunt.file.readJSON(configPath + "/appConfig.json");
 	//appConfig.pkg = pkg;
 
     //Retrieve proprieties of given targetName
@@ -48,7 +48,7 @@ module.exports = function (grunt) {
 		uglify        : gruntConfig.uglify,
 		//htmlmin       : gruntConfig.htmlmin,
 		//patternReplace: gruntConfig.patternReplace,
-		//buildPath     : buildPath,
+		buildPath     : buildPath,
         appPath       : appPath,
         vendorPath    : vendorPath,
 		compress      : gruntConfig.compress,
@@ -96,7 +96,6 @@ module.exports = function (grunt) {
 
     // Doc Task.
     grunt.registerTask("doc", ["clean:doc","ngdocs", "ftpush"]);
-
 
     // Default task.
     grunt.registerTask("default", ["bower", "deploy"]);

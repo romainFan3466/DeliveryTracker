@@ -39,7 +39,7 @@
                 "<%= appPath %>/js/controllers/**/*.js"
 
             ],
-            "dest": "<%= buildPath %>/deliveryTracker-app.js"
+            "dest": "<%= buildPath %>/js/deliveryTracker-app.js"
         },
         "lib": {
             "src": [
@@ -53,7 +53,7 @@
                 "<%= vendorPath %>/angular-bootstrap/ui-bootstrap.min.js",
                 "<%= vendorPath %>/angular-bootstrap/ui-bootstrap-tpls.js"
             ],
-            "dest": "<%= buildPath %>/deliveryTracker-lib.min.js"
+            "dest": "<%= buildPath %>/js/deliveryTracker-lib.min.js"
         }
     },
     "uglify": {
@@ -234,8 +234,24 @@
         "post-deploy": "<%= buildPath %>",
         "doc": "./docular_generated"
     },
-	"watch"    : {
-    },
+	"watch": {
+            "styles": {
+                "files": ["<%= appPath %>css/**/*.less"],
+                "tasks": ["less"],
+                "options": {
+                    "nospawn": true,
+                    "atBegin" : true
+                }
+            },
+            "jsApp" :{
+                "files": ["<%= appPath %>/js/**/*.js"],
+                "tasks": ["concat:app"],
+                "options": {
+                    "nospawn": true
+                }
+            }
+
+        },
     "sync": {
         "main": {
             "files": [

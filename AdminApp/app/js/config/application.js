@@ -4,6 +4,5 @@
 var AppModule = angular.module('DeliveryTrackerAdmin.app', [
     'ngRoute' ,
     'ngResource',
-    'ui.bootstrap',
     'angular.filter']);
 

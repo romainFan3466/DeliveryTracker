@@ -1,0 +1,104 @@
+// Mixins
+
+.translate3d(@x, @y, @z) {
+	-webkit-transform : translate3d(@x, @y, @z);
+	-moz-transform    : translate3d(@x, @y, @z);
+	-ms-transform     : translate3d(@x, @y, @z);
+	-o-transform      : translate3d(@x, @y, @z);
+	transform         : translate3d(@x, @y, @z);
+}
+
+.transform-style(@value : preserve-3d) {
+	-moz-transform-style    : @value;
+	-webkit-transform-style : @value;
+	-o-transform-style      : @value;
+	-ms-transform-style     : @value;
+	transform-style         : @value;
+}
+
+.transform-origin(@value) {
+	transform-origin         : @value;
+	-ms-transform-origin     : @value;
+	-webkit-transform-origin : @value;
+	-moz-transform-origin    : @value;
+	-o-transform-origin      : @value;
+}
+
+.transition-property(@transitionProperties) {
+	transition-property         : @transitionProperties;
+	-moz-transition-property    : @transitionProperties;
+	-ms-transition-property     : @transitionProperties;
+	-webkit-transition-property : @transitionProperties;
+	-o-transition-property      : @transitionProperties;
+}
+
+.transition-duration(@transition-duration : .15s) {
+	-webkit-transition-duration : @transition-duration;
+	-moz-transition-duration    : @transition-duration;
+	-ms-transition-duration     : @transition-duration;
+	-o-transition-duration      : @transition-duration;
+	transition-duration         : @transition-duration;
+}
+
+.transition-delay(@transition-delay : 0s) {
+	-webkit-transition-delay : @transition-delay;
+	-moz-transition-delay    : @transition-delay;
+	-ms-transition-delay     : @transition-delay;
+	-o-transition-delay      : @transition-delay;
+	transition-delay         : @transition-delay;
+}
+
+.transition-timing-function(@transitionTimingFunction : ease-in-out) {
+	transition-timing-function         : @transitionTimingFunction;
+	-moz-transition-timing-function    : @transitionTimingFunction;
+	-ms-transition-timing-function     : @transitionTimingFunction;
+	-webkit-transition-timing-function : @transitionTimingFunction;
+	-o-transition-timing-function      : @transitionTimingFunction;
+}
+
+.kiosk-transition(@transitionProperties, @transitionDuration : .15s, @transitionTimingFunction : ease-in-out, @transitionDelay : 0s) {
+	.transition-property(@transitionProperties);
+	.transition-duration(@transitionDuration);
+	.transition-timing-function(@transitionTimingFunction);
+	.transition-delay(@transitionDelay);
+}
+
+.kiosk-transition-transform(@transitionProperties : "", @transitionDuration : .15s, @transitionTimingFunction : ease-in-out, @transitionDelay : 0s) {
+	transition-property         : transform, @transitionProperties;
+	-moz-transition-property    : -moz-transform, @transitionProperties;
+	-ms-transition-property     : -ms-transform, @transitionProperties;
+	-webkit-transition-property : -webkit-transform, @transitionProperties;
+	-o-transition-property      : -o-transform, @transitionProperties;
+
+	.transition-duration(@transitionDuration);
+	.transition-timing-function(@transitionTimingFunction);
+	.transition-delay(@transitionDelay);
+}
+
+// Try to make page images appear washed out
+.grayScale(@value : 100%) {
+	filter         : grayscale(@value);
+	-webkit-filter : grayscale(@value);
+	-moz-filter    : grayscale(@value);
+	-ms-filter     : grayscale(@value);
+	-o-filter      : grayscale(@value);
+}
+
+.gradientV(@start, @end) {
+	//http://stackoverflow.com/questions/3934693/gradients-in-internet-explorer-9
+	background: mix(@start, @end, 50%);
+	filter: ~"progid:DXImageTransform.Microsoft.gradient(startColorStr="@start~", EndColorStr="@end~")";
+	background: -webkit-gradient(linear, left top, left bottom, from(@start), to(@end));
+	background: -webkit-linear-gradient(@start, @end);
+	background: -moz-linear-gradient(top, @start, @end);
+	background: -ms-linear-gradient(@start, @end);
+	background: -o-linear-gradient(@start, @end);
+	background: linear-gradient(@start, @end);
+	zoom: 1;
+}
+
+
+.center-vertically(@height) {
+	line-height : @height;
+	height      : @height;
+}
