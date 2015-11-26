@@ -27,6 +27,8 @@ class DBHandler:
         """
         self.config = configuration
 
+
+
     def __enter__(self) -> 'cursor':
         """Connect to database and create a DB cursor.
 
@@ -36,6 +38,8 @@ class DBHandler:
         self.cursor = self.conn.cursor(dictionary=True)
         return self.cursor
 
+
+
     def __exit__(self, exc_type, exc_value, exc_traceback):
         """Destroy the cursor as well as the connection (after committing).
 
@@ -44,6 +48,7 @@ class DBHandler:
         self.cursor.close()
         self.conn.commit()
         self.conn.close()
+
 
 
     def query(self, sql:str, params=None, multiple=True):
@@ -63,16 +68,18 @@ class DBHandler:
             print("Something went wrong: {}".format(err))
 
 
-    def select(self, table, selected_columns:tuple=None, params:dict=None, multiple=True):
+
+    def select(self, table, selected_columns:tuple=None, conditions:dict=None, multiple=True):
         try:
             self.conn = mysql.connector.connect(**self.config)
             self.cursor = self.conn.cursor(dictionary=True)
 
             selected_column_names = ", ".join(str(column) for column in selected_columns)
-            columns= ", ".join("%("+ key + ")s" for key, value in params.items())
+            columns= ", ".join(key + "= %(" + key +")s" for key, value in conditions.items()) if conditions is not None else "1"
+
             sql = ("SELECT "+ selected_column_names +" FROM "+ table + " WHERE "+ columns + ";")
 
-            self.cursor.execute(sql, params)
+            self.cursor.execute(sql, conditions)
 
             rows = self.cursor.fetchall() if multiple is True else self.cursor.fetchone()
 
@@ -83,6 +90,7 @@ class DBHandler:
             return rows
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
+
 
 
     def insert(self, table, params:dict):
@@ -104,23 +112,50 @@ class DBHandler:
             print("Something went wrong: {}".format(err))
 
 
-    def update(self, table, params:dict):
+
+    def update(self, table, params:dict, conditions:dict):
         try:
             self.conn = mysql.connector.connect(**self.config)
             self.cursor = self.conn.cursor(dictionary=True)
-            columns= ", ".join(key + "= %(" + key +")s" for key, value in params.items())
+            params_columns= ", ".join(key + "= %(" + key +")s" for key, value in params.items())
+            cond_columns = ", ".join(key + "= %(" + key +")s" for key, value in conditions.items())
+            sql = ("UPDATE "+ table + " SET "+ params_columns + " WHERE "+ cond_columns + ";")
 
-            sql = ("UPDATE "+ table + " SET "+ columns + ";")
+            # merge 2 dicts
+            params.update(conditions)
+
             self.cursor.execute(sql, params)
-            id = self.cursor.lastrowid
+            self.cursor.close()
+            self.conn.commit()
+            self.conn.close()
+
+            return True
+        except mysql.connector.Error as err:
+            print("Something went wrong: {}".format(err))
+            return False
+
+
+
+    def delete(self, table, conditions:dict=None):
+        try:
+            self.conn = mysql.connector.connect(**self.config)
+            self.cursor = self.conn.cursor(dictionary=True)
+
+            columns= ", ".join(key + "= %(" + key +")s" for key, value in conditions.items())
+
+            sql = ("DELETE FROM "+ table + " WHERE "+ columns + ";")
+
+            self.cursor.execute(sql, conditions)
 
             self.cursor.close()
             self.conn.commit()
             self.conn.close()
 
-            return id
+            return True
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
+            return False
+
 
 
     def is_existing(self, table, conditions:dict):
