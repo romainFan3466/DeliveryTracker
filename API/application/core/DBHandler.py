@@ -4,6 +4,7 @@
 ##############################################################################
 
 import mysql.connector
+from flask import abort
 
 
 class DBHandler:
@@ -51,7 +52,7 @@ class DBHandler:
 
 
 
-    def query(self, sql:str, params=None, multiple=True):
+    def query(self, sql:str, params:dict=None, multiple=True):
         try:
             self.conn = mysql.connector.connect(**self.config)
             self.cursor = self.conn.cursor(dictionary=True)
@@ -66,6 +67,7 @@ class DBHandler:
             return rows
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
+            abort(500)
 
 
 
@@ -75,7 +77,7 @@ class DBHandler:
             self.cursor = self.conn.cursor(dictionary=True)
 
             selected_column_names = ", ".join(str(column) for column in selected_columns)
-            columns= ", ".join(key + "= %(" + key +")s" for key, value in conditions.items()) if conditions is not None else "1"
+            columns= " AND ".join(key + "= %(" + key +")s" for key, value in conditions.items()) if conditions is not None else "1"
 
             sql = ("SELECT "+ selected_column_names +" FROM "+ table + " WHERE "+ columns + ";")
 
@@ -90,6 +92,7 @@ class DBHandler:
             return rows
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
+            abort(500)
 
 
 
@@ -110,6 +113,7 @@ class DBHandler:
             return id
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
+            abort(500)
 
 
 
@@ -132,7 +136,7 @@ class DBHandler:
             return True
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
-            return False
+            abort(500)
 
 
 
@@ -154,7 +158,7 @@ class DBHandler:
             return True
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
-            return False
+            abort(500)
 
 
 
@@ -177,3 +181,4 @@ class DBHandler:
 
         except mysql.connector.Error as err:
             print("Something went wrong: {}".format(err))
+            abort(500)
