@@ -52,6 +52,22 @@ class Location:
 
         return geocode
 
+    @staticmethod
+    def getIdFromDB(dbInstance, lat, lng):
+        locationId= dbInstance.select(table="locations",
+                                   selected_columns=("id",),
+                                   conditions={"lat": lat, "lng": lng},
+                                   multiple=False)
+
+        if isinstance(locationId, dict) and "id" in locationId:
+            locationId = locationId["id"]
+        else:
+            locationId = dbInstance.insert(table="locations", params={"lat": lat, "lng": lng})
+
+        return locationId
+
+
+
 
 
 
