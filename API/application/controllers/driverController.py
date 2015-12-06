@@ -65,7 +65,7 @@ def update(id:int):
         abort(400)
 
 
-#TODO get customer_id : session
+#TODO get customer_id : session dd
 @driver_blueprint.route("/drivers/<id>", methods=['DELETE'])
 def delete(id:int):
     if not db.is_existing(table="users", conditions={"id":id, "type":"driver"}):
