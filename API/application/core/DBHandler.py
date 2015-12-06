@@ -122,7 +122,7 @@ class DBHandler:
             self.conn = mysql.connector.connect(**self.config)
             self.cursor = self.conn.cursor(dictionary=True)
             params_columns= ", ".join(key + "= %(" + key +")s" for key, value in params.items())
-            cond_columns = ", ".join(key + "= %(" + key +")s" for key, value in conditions.items())
+            cond_columns = " AND ".join(key + "= %(" + key +")s" for key, value in conditions.items())
             sql = ("UPDATE "+ table + " SET "+ params_columns + " WHERE "+ cond_columns + ";")
 
             # merge 2 dicts
@@ -145,7 +145,7 @@ class DBHandler:
             self.conn = mysql.connector.connect(**self.config)
             self.cursor = self.conn.cursor(dictionary=True)
 
-            columns= ", ".join(key + "= %(" + key +")s" for key, value in conditions.items())
+            columns= " AND ".join(key + "= %(" + key +")s" for key, value in conditions.items())
 
             sql = ("DELETE FROM "+ table + " WHERE "+ columns + ";")
 
@@ -166,7 +166,7 @@ class DBHandler:
         try:
             self.conn = mysql.connector.connect(**self.config)
             self.cursor = self.conn.cursor(dictionary=True)
-            columns= ", ".join(key + "= %(" + key +")s" for key, value in conditions.items())
+            columns= " AND ".join(key + "= %(" + key +")s" for key, value in conditions.items())
 
             sql = ("SELECT 1 FROM "+ table + " WHERE "+ columns + ";")
             self.cursor.execute(sql, conditions)
