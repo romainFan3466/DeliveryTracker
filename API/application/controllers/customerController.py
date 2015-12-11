@@ -1,13 +1,14 @@
-from flask import  Blueprint, request, jsonify, abort
+from flask import  Blueprint, request, jsonify, abort, session
 from application import db
 from application.classes.Location import Location
+import application.decorators.sessionDecorator as sessionDecorator
 
 
 customer_blueprint = Blueprint('customer', __name__,)
 
 
-
 @customer_blueprint.route("/customers", methods=['POST'])
+@sessionDecorator.required_user("admin")
 def create():
     customer_data = request.get_json(force=True)
     if (
@@ -20,7 +21,9 @@ def create():
         ):
 
         ### check customer name duplication
-        if db.is_existing(table="customers", conditions={"name":customer_data["customer"]["name"]}):
+        company_id = session["user"]["company_id"]
+        if db.is_existing(table="customers",
+                          conditions={"name":customer_data["customer"]["name"], "company_id":company_id}):
             return jsonify(info="Customer with the same name already exist"),400
 
         # record Location
@@ -32,7 +35,8 @@ def create():
         data = {
             "name" : customer_data["customer"]["name"],
             "location_id" : locationId,
-            "phone" : customer_data["customer"]["phone"]
+            "phone" : customer_data["customer"]["phone"],
+            "company_id" : company_id
         }
         customerId= db.insert(table="customers", params=data)
 
@@ -43,10 +47,11 @@ def create():
 
 
 @customer_blueprint.route("/customers/<id>", methods=['PUT'])
+@sessionDecorator.required_user("admin")
 def update(id:int):
-
+    company_id = session["user"]["company_id"]
     ### check existing customer
-    if not db.is_existing(table="customers", conditions={"id":id}):
+    if not db.is_existing(table="customers", conditions={"id":id, "company_id": company_id}):
         return jsonify(info="Customer not found"),404
 
     customer_data = request.get_json(force=True)
@@ -55,7 +60,7 @@ def update(id:int):
         customer = {}
         #name
         if "name" in customer_data["customer"]:
-            if db.is_existing(table="customers", conditions={"name":customer_data["customer"]["name"]}):
+            if db.is_existing(table="customers", conditions={"name":customer_data["customer"]["name"],"company_id": company_id}):
                 return jsonify(info="Customer with the same name already exists"),400
 
             customer["name"] = customer_data["customer"]["name"]
@@ -80,9 +85,10 @@ def update(id:int):
 
 
 @customer_blueprint.route("/customers/<id>", methods=['DELETE'])
+@sessionDecorator.required_user("admin")
 def delete(id:int):
-
-    existing_customer = db.is_existing(table="customers",conditions={"id": id})
+    company_id = session["user"]["company_id"]
+    existing_customer = db.is_existing(table="customers",conditions={"id": id, "company_id": company_id})
     if existing_customer is False:
         return jsonify(info="Customer not found"),404
 
@@ -92,16 +98,17 @@ def delete(id:int):
 
 
 @customer_blueprint.route("/customers/<id>", methods=['GET'])
+@sessionDecorator.required_user("admin")
 def get(id:int):
     _SQL = """SELECT customers.*,
             locations.lat AS location_lat ,
             locations.lng AS location_lng
             FROM customers
             INNER JOIN locations ON customers.location_id = locations.id
-            WHERE customers.id = %(id)s;
+            WHERE customers.id = %(id)s AND customers.company_id = %(company_id)s;
           """
-
-    customer_raw = db.query(_SQL, {"id": id}, multiple=False)
+    company_id = session["user"]["company_id"]
+    customer_raw = db.query(_SQL, {"id": id, "company_id": company_id}, multiple=False)
     if customer_raw is None:
         return jsonify(info="Customer not found"),404
 
@@ -114,20 +121,21 @@ def get(id:int):
             "lng": customer_raw["location_lng"],
         }
     }
-
     return jsonify(customer=customer),200
 
 
-
 @customer_blueprint.route("/customers/all", methods=['GET'])
+@sessionDecorator.required_user("admin")
 def getAll():
     _SQL = """SELECT customers.*,
             locations.lat AS location_lat ,
             locations.lng AS location_lng
             FROM customers
-            INNER JOIN locations ON customers.location_id = locations.id;
+            INNER JOIN locations ON customers.location_id = locations.id
+            WHERE customers.company_id = %(company_id)s;
           """
-    customers_raw = db.query(_SQL)
+    company_id = session["user"]["company_id"]
+    customers_raw = db.query(_SQL, {"company_id": company_id})
     if len(customers_raw) <1:
         return jsonify(customers=customers_raw), 200
 

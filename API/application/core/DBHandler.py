@@ -71,7 +71,7 @@ class DBHandler:
 
 
 
-    def select(self, table, selected_columns:tuple=None, conditions:dict=None, multiple=True):
+    def select(self, table, selected_columns:tuple=("*",), conditions:dict=None, multiple=True):
         try:
             self.conn = mysql.connector.connect(**self.config)
             self.cursor = self.conn.cursor(dictionary=True)

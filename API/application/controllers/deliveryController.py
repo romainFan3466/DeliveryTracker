@@ -1,12 +1,14 @@
 from flask import abort, Blueprint, request, jsonify
 from application import db
 from application.classes.Location import Location
+import application.decorators.sessionDecorator as sessionDecorator
 
 
 delivery_blueprint = Blueprint('delivery', __name__,)
 
 
 @delivery_blueprint.route("/deliveries", methods=['POST'])
+@sessionDecorator.required_user("admin")
 def create():
     delivery = request.get_json(force=True)
     if (
@@ -54,6 +56,7 @@ def create():
 
 
 @delivery_blueprint.route("/deliveries/<id>", methods=['PUT'])
+@sessionDecorator.required_user("admin")
 def update(id:int):
     if not db.is_existing(table="deliveries", conditions={"id":id}):
         return jsonify(info="Delivery not found"), 404
@@ -96,6 +99,7 @@ def update(id:int):
 
 
 @delivery_blueprint.route("/deliveries/<id>", methods=['DELETE'])
+@sessionDecorator.required_user("admin")
 def delete(id:int):
     if not db.is_existing(table="deliveries", conditions={"id":id}):
         return jsonify(info="Delivery not found"), 404
@@ -106,6 +110,7 @@ def delete(id:int):
 
 
 @delivery_blueprint.route("/deliveries/<id>", methods=['GET'])
+@sessionDecorator.required_user("admin")
 def get(id:int):
 
     _SQL = """SELECT deliveries.*,
@@ -146,6 +151,7 @@ def get(id:int):
 
 
 @delivery_blueprint.route("/deliveries/all", methods=['GET'])
+@sessionDecorator.required_user("admin")
 def getAll():
 
     _SQL = """ SELECT deliveries.*,

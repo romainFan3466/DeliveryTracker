@@ -62,6 +62,10 @@ app.register_blueprint(vehicle_blueprint)
 def bad_request(error):
     return jsonify(info="Bad request, some required fields are not recognized"),400
 
+@app.errorhandler(401)
+def unauthorized(error):
+    return jsonify(info="Unauthorized access"),401
+
 
 @app.errorhandler(500)
 def bad_request(error):
