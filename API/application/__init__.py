@@ -64,7 +64,7 @@ def bad_request(error):
 
 @app.errorhandler(401)
 def unauthorized(error):
-    return jsonify(info="Unauthorized access"),401
+    return jsonify(info="Unauthorized access" ),401
 
 
 @app.errorhandler(500)

@@ -45,6 +45,12 @@ def log_out():
     return jsonify(info="Your are logged out"), 200
 
 
+@authentication_blueprint.route("/status", methods=['GET'])
+def status():
+    if "user" in session :
+        return jsonify(session=session["user"])
+    return jsonify(session="logout")
 
+#TODO recover password
 
 

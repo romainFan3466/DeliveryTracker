@@ -1,8 +1,8 @@
 
-from flask import url_for
+from flask import url_for, session
 import pytest
 from application.core.DBHandler import DBHandler
-from application.classes.Location import Location
+
 import json
 
 class TestBlueprintCustomer:
@@ -20,17 +20,40 @@ class TestBlueprintCustomer:
 
 
 
+
 ###############CREATE ############################"
 
+    def test_create_unauthorized(self, client):
+        res = client.post(url_for('customer.create'), data=json.dumps({}),  content_type='application/json')
+        assert res.status_code == 401
+        assert res.json == {"info": "Unauthorized access"}
 
-    def test_create_with_wrong_params(self, client):
+
+
+    def test_create_with_wrong_params(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"]= {
+                "id" : 3,
+                "type": "admin",
+                "company_id": 2
+        }
+
         res = client.post(url_for('customer.create'), data=json.dumps({}),  content_type='application/json')
         assert res.status_code == 400
         assert res.json == {'info': 'Bad request, some required fields are not recognized'}
+        session.clear()
+        mocker.stopall()
 
 
 
     def test_create_with_existing_customer(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
         def  is_existing(table, **kwargs):
             if table == "customers" :
                 return True
@@ -43,12 +66,17 @@ class TestBlueprintCustomer:
 
 
 
-    def test_create_with_success_no_location_creation(self, client, mocker):
+    def test_create_with_success(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
         def is_existing(table, **kwargs):
             if table == "customers" :
                 return False
         mocker.patch.object(DBHandler, 'is_existing', side_effect=is_existing)
-        mocker.patch.object(Location, 'getIdFromDB', return_value=3)
         mocker.patch.object(DBHandler, 'insert', return_value=12)
         res = client.post(url_for('customer.create'), data=json.dumps(self.customer), content_type='application/json')
         assert res.status_code == 200
@@ -56,27 +84,20 @@ class TestBlueprintCustomer:
         mocker.stopall()
 
 
-
-    def test_create_with_success_and_location_creation(self, client, mocker):
-        def  is_existing(table, **kwargs):
-            if table == "customers" :
-                return False
-
-        def insert(table, **kwargs):
-            return 12 if table == "customers" or table == "locations" else None
-
-        mocker.patch.object(DBHandler, 'select', return_value=None)
-        mocker.patch.object(DBHandler, 'is_existing',  side_effect=is_existing)
-        mocker.patch.object(DBHandler, "insert", side_effect=insert)
-        res = client.post(url_for('customer.create'), data=json.dumps(self.customer), content_type='application/json')
-        assert res.status_code == 200
-        assert res.json == {"info":"Customer created successfully", "customerId":12}
-        mocker.stopall()
-
-
     ############## DELETE ######################
+    def test_delete_unauthorized(self, client):
+        res = client.delete(url_for('customer.delete', id=12))
+        assert res.status_code == 401
+        assert res.json == {"info": "Unauthorized access"}
+
 
     def test_delete_with_wrong_params(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
         mocker.patch.object(DBHandler, 'is_existing',  return_value=False)
         res = client.delete(url_for('customer.delete', id=12))
         assert res.status_code == 404
@@ -85,6 +106,12 @@ class TestBlueprintCustomer:
 
 
     def test_delete_with_success(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
         mocker.patch.object(DBHandler, 'is_existing',  return_value=True)
         mocker.patch.object(DBHandler, 'delete',  return_value=True)
         res = client.delete(url_for('customer.delete', id=12))
@@ -95,8 +122,20 @@ class TestBlueprintCustomer:
 
  ############## GET ######################
 
+    def test_get_unauthorized(self, client):
+        res = client.get(url_for('customer.get', id=12))
+        assert res.status_code == 401
+        assert res.json == {"info": "Unauthorized access"}
+
+
     def test_get_with_wrong_params(self, client, mocker):
-        mocker.patch.object(DBHandler, 'query',  return_value=None)
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        mocker.patch.object(DBHandler, 'select',  return_value=None)
         res = client.get(url_for('customer.get', id=12))
         assert res.status_code == 404
         assert res.json == {'info': 'Customer not found'}
@@ -104,6 +143,12 @@ class TestBlueprintCustomer:
 
 
     def test_get_with_success(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
         sql_result = {
             "id" : 12,
             "name" : "romain",
@@ -111,7 +156,7 @@ class TestBlueprintCustomer:
             "location_lng": 2.345435,
             "phone":"546456445"
         }
-        mocker.patch.object(DBHandler, 'query',  return_value=sql_result)
+        mocker.patch.object(DBHandler, 'select',  return_value=sql_result)
         res = client.get(url_for('customer.get', id=12))
         c = {
             "customer":{
@@ -130,8 +175,18 @@ class TestBlueprintCustomer:
 
 
  ############## UPDATE ######################
+    def test_update_unauthorized(self, client):
+        res = client.put(url_for('customer.update', id=12))
+        assert res.status_code == 401
+        assert res.json == {"info": "Unauthorized access"}
 
     def test_update_with_wrong_customer_id(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
         mocker.patch.object(DBHandler, 'is_existing', return_value=False)
         res = client.put(url_for('customer.update', id=12))
         assert res.status_code == 404
@@ -140,6 +195,12 @@ class TestBlueprintCustomer:
 
 
     def test_update_with_wrong_params(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
         mocker.patch.object(DBHandler, 'is_existing', return_value=True)
         res = client.put(url_for('customer.update', id=12), data=json.dumps({}),  content_type='application/json')
         assert res.status_code == 400
@@ -148,6 +209,12 @@ class TestBlueprintCustomer:
 
 
     def test_update_with_existing_customer_name(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
         customer_req = {
             "customer" : {
                 "name" : "romain"
@@ -161,6 +228,12 @@ class TestBlueprintCustomer:
 
 
     def test_update_with_success(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
         def is_existing(table, conditions, **kwargs):
             if table == "customers":
                 if "id" in conditions:
@@ -179,7 +252,6 @@ class TestBlueprintCustomer:
             }
         }
         mocker.patch.object(DBHandler, 'is_existing', side_effect=is_existing)
-        mocker.patch.object(Location, 'getIdFromDB', return_value=34)
         mocker.patch.object(DBHandler, 'update', return_value=True)
         res = client.put(url_for('customer.update', id=12), data=json.dumps(customer_req), content_type='application/json')
         assert res.status_code == 200
@@ -189,8 +261,19 @@ class TestBlueprintCustomer:
 
 
 ############## GET ALL ###############
+    def test_getall_unauthorized(self, client):
+        res = client.get(url_for("customer.getAll"))
+        assert res.status_code == 401
+        assert res.json == {"info": "Unauthorized access"}
+
     def test_getAll_with_no_customers(self, client, mocker):
-        mocker.patch.object(DBHandler, "query", return_value=[])
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        mocker.patch.object(DBHandler, "select", return_value=[])
         res = client.get(url_for("customer.getAll"))
         assert "customers" in res.json
         assert isinstance(res.json["customers"], list)
@@ -199,6 +282,12 @@ class TestBlueprintCustomer:
 
 
     def test_getAll_with_customers(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
         sql_result = [{
             "id" : 12,
             "name" : "romain",
@@ -220,7 +309,7 @@ class TestBlueprintCustomer:
         }
 
 
-        mocker.patch.object(DBHandler, "query", return_value=sql_result)
+        mocker.patch.object(DBHandler, "select", return_value=sql_result)
         res = client.get(url_for("customer.getAll"))
         assert "customers" in res.json
         assert isinstance(res.json["customers"], list)

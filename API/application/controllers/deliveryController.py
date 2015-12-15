@@ -1,8 +1,9 @@
-from flask import abort, Blueprint, request, jsonify
+from flask import abort, Blueprint, request, jsonify, session
 from application import db
 from application.classes.Location import Location
-import application.decorators.sessionDecorator as sessionDecorator
 
+import application.decorators.sessionDecorator as sessionDecorator
+import datetime
 
 delivery_blueprint = Blueprint('delivery', __name__,)
 
@@ -17,36 +18,40 @@ def create():
         "location_pickup" in delivery["delivery"] and
         "customer_id" in delivery["delivery"] and
         "date_created" in delivery["delivery"]and
-        ("lat" and "lng" in delivery["delivery"]["location_delivery"]) and
-        ("lat" and "lng" in delivery["delivery"]["location_pickup"])
+        "lat" in delivery["delivery"]["location_delivery"] and
+        "lng" in delivery["delivery"]["location_delivery"] and
+        "lat" in delivery["delivery"]["location_pickup"] and
+        "lng" in delivery["delivery"]["location_pickup"] and
+        Location.isValid(delivery["delivery"]["location_delivery"]["lat"], delivery["delivery"]["location_delivery"]["lng"]) and
+        Location.isValid(delivery["delivery"]["location_pickup"]["lat"], delivery["delivery"]["location_pickup"]["lng"])
     ):
-
-        # record locations
-        location_delivery_id= Location.getIdFromDB(dbInstance=db,
-                                                   lat=delivery["delivery"]["location_delivery"]["lat"],
-                                                   lng=delivery["delivery"]["location_delivery"]["lng"])
-
-        location_pickup_id= Location.getIdFromDB(dbInstance=db,
-                                                   lat=delivery["delivery"]["location_pickup"]["lat"],
-                                                   lng=delivery["delivery"]["location_pickup"]["lng"])
 
         # check existing customer
         if not db.is_existing(table="customers", conditions={"id": delivery["delivery"]["customer_id"]}) :
             return jsonify(info="Customer not found"),404
 
-        formatted_delivery ={}
-        formatted_delivery["location_delivery_id"] = location_delivery_id
-        formatted_delivery["location_pickup_id"] = location_pickup_id
-        formatted_delivery["customer_id"] = delivery["delivery"]["customer_id"]
-        formatted_delivery["date_created"] = delivery["delivery"]["date_created"]
 
-        if "date_pickup" in delivery["delivery"]:
-            formatted_delivery["date_pickup"] = delivery["delivery"]["date_pickup"]
+        formatted_delivery ={
+            "location_delivery_lat" : delivery["delivery"]["location_delivery"]["lat"],
+            "location_delivery_lng" : delivery["delivery"]["location_delivery"]["lng"],
+            "location_pickup_lat" : delivery["delivery"]["location_pickup"]["lat"],
+            "location_pickup_lng" : delivery["delivery"]["location_pickup"]["lng"],
+            "customer_id" : delivery["delivery"]["customer_id"],
+            "company_id" : session["user"]["company_id"]
+        }
 
-        if "date_delivery" in delivery["delivery"]:
-            formatted_delivery["date_delivery"] = delivery["delivery"]["date_delivery"]
+        try:
+            formatted_delivery["date_created"] = datetime.datetime.strptime(delivery["delivery"]["date_created"],"%Y-%m-%d %H:%M:%S")
 
-        delivery_id = db.insert(table="deliveries", params=formatted_delivery )
+            if "date_pickup" in delivery["delivery"]:
+                formatted_delivery["date_pickup"] = datetime.datetime.strptime(delivery["delivery"]["date_pickup"],"%Y-%m-%d %H:%M:%S")
+
+            if "date_delivery" in delivery["delivery"]:
+                formatted_delivery["date_delivery"] = datetime.datetime.strptime(delivery["delivery"]["date_delivery"],"%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            abort(400)
+
+        delivery_id = db.insert(table="deliveries", params=formatted_delivery)
 
         return jsonify(info="Delivery created successfully", deliveryId=delivery_id),200
 
@@ -64,7 +69,9 @@ def update(id:int):
     delivery = request.get_json(force=True)
 
     if "delivery" in delivery:
-        formatted_delivery ={}
+        formatted_delivery ={
+            "company_id" : session["user"]["company_id"]
+        }
 
         #customer_id
         if "customer_id" in delivery["delivery"]:
@@ -74,22 +81,38 @@ def update(id:int):
 
         #location pickup
         if "location_pickup" in delivery["delivery"]:
-            if "lat" in delivery["delivery"]["location_pickup"] and "lng" in delivery["delivery"]["location_pickup"]:
-                formatted_delivery["location_pickup_id"]= Location.getIdFromDB(dbInstance=db,
-                                                         lat=delivery["delivery"]["location_pickup"]["lat"],
-                                                         lng=delivery["delivery"]["location_pickup"]["lng"])
+            if (
+                "lat" in delivery["delivery"]["location_pickup"] and
+                "lng" in delivery["delivery"]["location_pickup"] and
+                Location.isValid(delivery["delivery"]["location_pickup"]["lat"], delivery["delivery"]["location_pickup"]["lng"])
+            ):
+                formatted_delivery["location_pickup_lat"]= delivery["delivery"]["location_pickup"]["lat"]
+                formatted_delivery["location_pickup_lng"]= delivery["delivery"]["location_pickup"]["lng"]
+            else:
+                abort(400)
+
         #location delivery
         if "location_delivery" in delivery["delivery"]:
-            if "lat" in delivery["delivery"]["location_delivery"] and "lng" in delivery["delivery"]["location_delivery"]:
-                formatted_delivery["location_delivery_id"] = Location.getIdFromDB(dbInstance=db,
-                                                             lat=delivery["delivery"]["location_delivery"]["lat"],
-                                                             lng=delivery["delivery"]["location_delivery"]["lng"])
-        #date
-        if "date_pickup" in delivery["delivery"]:
-            formatted_delivery["date_pickup"] = delivery["delivery"]["date_pickup"]
+            if (
+                "lat" in delivery["delivery"]["location_delivery"] and
+                "lng" in delivery["delivery"]["location_delivery"] and
+                Location.isValid(delivery["delivery"]["location_delivery"]["lat"], delivery["delivery"]["location_delivery"]["lng"])
+            ):
+                formatted_delivery["location_delivery_lat"] = delivery["delivery"]["location_delivery"]["lat"]
+                formatted_delivery["location_delivery_lng"] = delivery["delivery"]["location_delivery"]["lng"]
+            else:
+                abort(400)
 
-        if "date_delivery" in delivery["delivery"]:
-            formatted_delivery["date_delivery"] = delivery["delivery"]["date_delivery"]
+        try:
+            if "date_pickup" in delivery["delivery"]:
+                formatted_delivery["date_pickup"] = datetime.datetime.strptime(delivery["delivery"]["date_pickup"],
+                                                                               "%Y-%m-%d %H:%M:%S")
+
+            if "date_delivery" in delivery["delivery"]:
+                formatted_delivery["date_delivery"] = datetime.datetime.strptime(delivery["delivery"]["date_delivery"],
+                                                                                 "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            abort(400)
 
         db.update(table="deliveries", params=formatted_delivery, conditions={"id": id})
         return jsonify(info="Delivery updated successfully"), 200
@@ -101,7 +124,7 @@ def update(id:int):
 @delivery_blueprint.route("/deliveries/<id>", methods=['DELETE'])
 @sessionDecorator.required_user("admin")
 def delete(id:int):
-    if not db.is_existing(table="deliveries", conditions={"id":id}):
+    if not db.is_existing(table="deliveries", conditions={"id":id, "company_id" : session["user"]["company_id"]}):
         return jsonify(info="Delivery not found"), 404
 
     db.delete(table="deliveries", conditions={"id":id})
@@ -113,19 +136,7 @@ def delete(id:int):
 @sessionDecorator.required_user("admin")
 def get(id:int):
 
-    _SQL = """SELECT deliveries.*,
-            pickup.lat AS location_pickup_lat ,
-            pickup.lng AS location_pickup_lng,
-            delivery.lat AS location_delivery_lat ,
-            delivery.lng AS location_delivery_lng
-
-            FROM deliveries
-            INNER JOIN locations AS pickup ON deliveries.location_pickup_id = pickup.id
-            INNER JOIN locations AS delivery ON deliveries.location_delivery_id = delivery.id
-            WHERE deliveries.id = %(id)s;
-          """
-
-    delivery=db.query(_SQL, {"id": id}, multiple=False)
+    delivery=db.select(table="deliveries", conditions={"id": id, "company_id" : session["user"]["company_id"]}, multiple=False)
 
     if delivery is None:
         return jsonify(info="Delivery not found"), 404
@@ -139,11 +150,11 @@ def get(id:int):
         "date_created": delivery["date_created"],
         "location_pickup": {
             "lat": delivery["location_pickup_lat"],
-            "lng": delivery["location_pickup_lng"],
+            "lng": delivery["location_pickup_lng"]
         },
         "location_delivery": {
             "lat": delivery["location_delivery_lat"],
-            "lng": delivery["location_delivery_lng"],
+            "lng": delivery["location_delivery_lng"]
         }
     }
     return jsonify(delivery=d), 200
@@ -154,21 +165,10 @@ def get(id:int):
 @sessionDecorator.required_user("admin")
 def getAll():
 
-    _SQL = """ SELECT deliveries.*,
-            pickup.lat AS location_pickup_lat ,
-            pickup.lng AS location_pickup_lng,
-            delivery.lat AS location_delivery_lat ,
-            delivery.lng AS location_delivery_lng
-
-            FROM deliveries
-            INNER JOIN locations AS pickup ON deliveries.location_pickup_id = pickup.id
-            INNER JOIN locations AS delivery ON deliveries.location_delivery_id = delivery.id;
-          """
-
-    deliveries_raw = db.query(_SQL)
+    deliveries_raw=db.select(table="deliveries", conditions={"company_id" : session["user"]["company_id"]})
 
     if len(deliveries_raw) <1:
-        return jsonify(deliveries=deliveries_raw), 200
+        return jsonify(deliveries=[]), 200
 
     deliveries = []
 
@@ -183,11 +183,11 @@ def getAll():
                 "date_created" : delivery["date_created"],
                 "location_pickup" : {
                     "lat" : delivery["location_pickup_lat"],
-                    "lng" : delivery["location_pickup_lng"],
+                    "lng" : delivery["location_pickup_lng"]
                 },
                 "location_delivery" : {
                     "lat" : delivery["location_delivery_lat"],
-                    "lng" : delivery["location_delivery_lng"],
+                    "lng" : delivery["location_delivery_lng"]
                 }
             }
         }

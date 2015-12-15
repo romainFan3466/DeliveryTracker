@@ -6,6 +6,7 @@ def required_user(user:str="admin"):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             # if user is logged
+            v = session
             if "user" in session and "id" in session["user"]:
                 # if a admin is required
                 if "type" in session["user"] and  session["user"]["type"]== user:

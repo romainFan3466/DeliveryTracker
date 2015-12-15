@@ -26,15 +26,12 @@ def create():
                           conditions={"name":customer_data["customer"]["name"], "company_id":company_id}):
             return jsonify(info="Customer with the same name already exist"),400
 
-        # record Location
-        locationId = Location.getIdFromDB(dbInstance=db,
-                             lat=customer_data["customer"]["location"]["lat"],
-                             lng=customer_data["customer"]["location"]["lng"])
 
         # record customer
         data = {
             "name" : customer_data["customer"]["name"],
-            "location_id" : locationId,
+            "location_lat" : customer_data["customer"]["location"]["lat"],
+            "location_lng" : customer_data["customer"]["location"]["lng"],
             "phone" : customer_data["customer"]["phone"],
             "company_id" : company_id
         }
@@ -70,9 +67,9 @@ def update(id:int):
             "lat" in customer_data["customer"]["location"] and
             "lng" in customer_data["customer"]["location"]
             ):
-            customer["location_id"] = Location.getIdFromDB(dbInstance=db,
-                                        lat=customer_data["customer"]["location"]["lat"],
-                                        lng=customer_data["customer"]["location"]["lng"])
+            customer["location_lat"] = customer_data["customer"]["location"]["lat"]
+            customer["location_lng"] = customer_data["customer"]["location"]["lng"]
+
         #phone
         if "phone" in customer_data["customer"]:
             customer["phone"] = customer_data["customer"]
@@ -100,15 +97,8 @@ def delete(id:int):
 @customer_blueprint.route("/customers/<id>", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def get(id:int):
-    _SQL = """SELECT customers.*,
-            locations.lat AS location_lat ,
-            locations.lng AS location_lng
-            FROM customers
-            INNER JOIN locations ON customers.location_id = locations.id
-            WHERE customers.id = %(id)s AND customers.company_id = %(company_id)s;
-          """
     company_id = session["user"]["company_id"]
-    customer_raw = db.query(_SQL, {"id": id, "company_id": company_id}, multiple=False)
+    customer_raw = db.select(table="customers", conditions={"id": id, "company_id": company_id}, multiple=False)
     if customer_raw is None:
         return jsonify(info="Customer not found"),404
 
@@ -127,15 +117,8 @@ def get(id:int):
 @customer_blueprint.route("/customers/all", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def getAll():
-    _SQL = """SELECT customers.*,
-            locations.lat AS location_lat ,
-            locations.lng AS location_lng
-            FROM customers
-            INNER JOIN locations ON customers.location_id = locations.id
-            WHERE customers.company_id = %(company_id)s;
-          """
     company_id = session["user"]["company_id"]
-    customers_raw = db.query(_SQL, {"company_id": company_id})
+    customers_raw = db.select(table="customers",conditions={"company_id": company_id})
     if len(customers_raw) <1:
         return jsonify(customers=customers_raw), 200
 
