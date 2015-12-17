@@ -8,7 +8,6 @@ from werkzeug.security import generate_password_hash
 
 driver_blueprint = Blueprint('driver', __name__,)
 
-
 @driver_blueprint.route("/drivers", methods=['POST'])
 @sessionDecorator.required_user("admin")
 def create():
@@ -102,6 +101,7 @@ def get(id:int):
     driver = {
         "id": d["id"],
         "name": d["name"],
+        "email": d["email"],
         "phone": d["phone"],
         "location": {
             "lat": d["location_lat"],
@@ -118,23 +118,24 @@ def getAll():
     drivers_raw= db.select(table="users", conditions={"type":"driver", "company_id": company_id}, multiple=True)
 
     if len(drivers_raw) <1:
-        return jsonify(customers=drivers_raw), 200
+        return jsonify(drivers=drivers_raw), 200
 
-    customers = []
+    drivers = []
     for driver in drivers_raw:
         d = {
             "driver": {
                 "id": driver["id"],
                 "name": driver["name"],
                 "phone": driver["phone"],
+                "email": driver["email"],
                 "location": {
                     "lat": driver["location_lat"],
                     "lng": driver["location_lng"],
                 }
             }
         }
-        customers.append(d)
-    return jsonify(customers=customers),200
+        drivers.append(d)
+    return jsonify(drivers=drivers),200
 
 
 

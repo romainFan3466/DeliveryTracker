@@ -179,3 +179,154 @@ class TestBlueprintDriver:
         assert res.status_code == 200
         assert res.json == {'info': "Driver updated successfully"}
         mocker.stopall()
+        
+    
+    ########### DELETE ############
+    def test_delete_unauthorized(self, mocker, client):
+        res = client.delete(url_for("driver.delete", id=6))
+        assert res.status_code == 401
+        assert res.json == {'info': 'Unauthorized access'}
+
+
+    def test_delete_wrong_driver(self, mocker, client):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        mocker.patch.object(DBHandler, "is_existing", return_value=False)
+        res = client.delete(url_for("driver.delete", id=6))
+        assert res.status_code == 404
+        assert res.json == {'info': 'Driver not found'}
+        mocker.stopall()
+
+
+    def test_delete_success(self, mocker, client):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        mocker.patch.object(DBHandler, "is_existing", return_value=True)
+        mocker.patch.object(DBHandler, "delete", return_value=True)
+        res = client.delete(url_for("driver.delete", id=6))
+        assert res.status_code == 200
+        assert res.json == {'info': 'Driver deleted successfully'}
+        mocker.stopall()
+        
+    
+     ############## GET ######################
+    def test_get_unauthorized(self, client):
+        res = client.get(url_for('driver.get', id=12))
+        assert res.status_code == 401
+        assert res.json == {"info": "Unauthorized access"}
+
+
+    def test_get_with_wrong_params(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        mocker.patch.object(DBHandler, 'select',  return_value=None)
+        res = client.get(url_for('driver.get', id=12))
+        assert res.status_code == 404
+        assert res.json == {'info': 'Driver not found'}
+        mocker.stopall()
+
+
+    def test_get_with_success(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
+        _sql = {
+            "id" : 2,
+            "name": "Romain",
+            "email": "romain@test.ie",
+            "phone" : "5464654645",
+            "location_lat" : 12.46666,
+            "location_lng" : 13.46666
+        }
+        driver = {
+            "id" : 2,
+            "name": "Romain",
+            "email": "romain@test.ie",
+            "phone" : "5464654645",
+            "location": {
+                    "lat": 12.46666,
+                    "lng": 13.46666
+                }
+        }
+        mocker.patch.object(DBHandler, 'select', return_value=_sql)
+        res = client.get(url_for('driver.get', id=12))
+        assert res.status_code == 200
+        assert "driver" in res.json
+        assert res.json["driver"] == driver
+        mocker.stopall()
+
+
+############## GET ALL ###############
+    def test_getall_unauthorized(self, client):
+        res = client.get(url_for("driver.getAll"))
+        assert res.status_code == 401
+        assert res.json == {"info": "Unauthorized access"}
+
+    def test_getAll_with_no_drivers(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        mocker.patch.object(DBHandler, "select", return_value=[])
+        res = client.get(url_for("driver.getAll"))
+        assert "drivers" in res.json
+        assert isinstance(res.json["drivers"], list)
+        assert len(res.json["drivers"]) == 0
+        assert res.status_code == 200
+        mocker.stopall()
+
+
+    def test_getAll_with_drivers(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
+
+        _sql = [{
+            "id": 2,
+            "name": "Romain",
+            "email": "romain@test.ie",
+            "phone": "5464654645",
+            "location_lat": 12.46666,
+            "location_lng": 13.46666
+        }]
+        driver = {
+            "id": 2,
+            "name": "Romain",
+            "email": "romain@test.ie",
+            "phone": "5464654645",
+            "location": {
+                "lat": 12.46666,
+                "lng": 13.46666
+            }
+        }
+
+        mocker.patch.object(DBHandler, "select", return_value=_sql)
+        res = client.get(url_for("driver.getAll"))
+        assert "drivers" in res.json
+        assert isinstance(res.json["drivers"], list)
+        assert len(res.json["drivers"]) == 1
+        assert res.json["drivers"][0] == {"driver":driver}
+        assert res.status_code == 200
+        mocker.stopall()
