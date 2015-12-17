@@ -279,6 +279,7 @@ class TestBlueprintCustomer:
         assert isinstance(res.json["customers"], list)
         assert len(res.json["customers"]) == 0
         assert res.status_code == 200
+        mocker.stopall()
 
 
     def test_getAll_with_customers(self, client, mocker):
@@ -316,4 +317,5 @@ class TestBlueprintCustomer:
         assert len(res.json["customers"]) == 1
         assert res.json["customers"][0] == _customer
         assert res.status_code == 200
+        mocker.stopall()
 
