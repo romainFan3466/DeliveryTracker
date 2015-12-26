@@ -7,8 +7,8 @@ import datetime
 
 delivery_blueprint = Blueprint('delivery', __name__,)
 
-
-@delivery_blueprint.route("/deliveries", methods=['POST'])
+# TODO : implement weight, size, description, type
+@delivery_blueprint.route("/api/deliveries", methods=['POST'])
 @sessionDecorator.required_user("admin")
 def create():
     delivery = request.get_json(force=True)
@@ -60,7 +60,7 @@ def create():
 
 
 
-@delivery_blueprint.route("/deliveries/<id>", methods=['PUT'])
+@delivery_blueprint.route("/api/deliveries/<id>", methods=['PUT'])
 @sessionDecorator.required_user("admin")
 def update(id:int):
     if not db.is_existing(table="deliveries", conditions={"id":id}):
@@ -121,7 +121,7 @@ def update(id:int):
 
 
 
-@delivery_blueprint.route("/deliveries/<id>", methods=['DELETE'])
+@delivery_blueprint.route("/api/deliveries/<id>", methods=['DELETE'])
 @sessionDecorator.required_user("admin")
 def delete(id:int):
     if not db.is_existing(table="deliveries", conditions={"id":id, "company_id" : session["user"]["company_id"]}):
@@ -132,7 +132,7 @@ def delete(id:int):
 
 
 
-@delivery_blueprint.route("/deliveries/<id>", methods=['GET'])
+@delivery_blueprint.route("/api/deliveries/<id>", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def get(id:int):
 
@@ -161,7 +161,7 @@ def get(id:int):
 
 
 
-@delivery_blueprint.route("/deliveries/all", methods=['GET'])
+@delivery_blueprint.route("/api/deliveries/all", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def getAll():
 

@@ -7,7 +7,7 @@ import application.decorators.sessionDecorator as sessionDecorator
 customer_blueprint = Blueprint('customer', __name__,)
 
 
-@customer_blueprint.route("/customers", methods=['POST'])
+@customer_blueprint.route("/api/customers", methods=['POST'])
 @sessionDecorator.required_user("admin")
 def create():
     customer_data = request.get_json(force=True)
@@ -43,7 +43,7 @@ def create():
 
 
 
-@customer_blueprint.route("/customers/<id>", methods=['PUT'])
+@customer_blueprint.route("/api/customers/<id>", methods=['PUT'])
 @sessionDecorator.required_user("admin")
 def update(id:int):
     company_id = session["user"]["company_id"]
@@ -81,7 +81,7 @@ def update(id:int):
 
 
 
-@customer_blueprint.route("/customers/<id>", methods=['DELETE'])
+@customer_blueprint.route("/api/customers/<id>", methods=['DELETE'])
 @sessionDecorator.required_user("admin")
 def delete(id:int):
     company_id = session["user"]["company_id"]
@@ -94,7 +94,7 @@ def delete(id:int):
 
 
 
-@customer_blueprint.route("/customers/<id>", methods=['GET'])
+@customer_blueprint.route("/api/customers/<id>", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def get(id:int):
     company_id = session["user"]["company_id"]
@@ -114,7 +114,7 @@ def get(id:int):
     return jsonify(customer=customer),200
 
 
-@customer_blueprint.route("/customers/all", methods=['GET'])
+@customer_blueprint.route("/api/customers/all", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def getAll():
     company_id = session["user"]["company_id"]

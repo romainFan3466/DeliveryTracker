@@ -4,7 +4,7 @@ import application.decorators.sessionDecorator as sessionDecorator
 vehicle_blueprint = Blueprint('vehicle', __name__,)
 
 
-@vehicle_blueprint.route("/vehicles", methods=['POST'])
+@vehicle_blueprint.route("/api/vehicles", methods=['POST'])
 @sessionDecorator.required_user("admin")
 def create():
     company_id = session["user"]["company_id"]
@@ -37,7 +37,7 @@ def create():
 
 
 
-@vehicle_blueprint.route("/vehicles/<id>", methods=['PUT'])
+@vehicle_blueprint.route("/api/vehicles/<id>", methods=['PUT'])
 @sessionDecorator.required_user("admin")
 def update(id:int):
     company_id = session["user"]["company_id"]
@@ -77,7 +77,7 @@ def update(id:int):
         abort(400)
 
 
-@vehicle_blueprint.route("/vehicles/<id>", methods=['DELETE'])
+@vehicle_blueprint.route("/api/vehicles/<id>", methods=['DELETE'])
 @sessionDecorator.required_user("admin")
 def delete(id:int):
     company_id = session["user"]["company_id"]
@@ -88,7 +88,7 @@ def delete(id:int):
     return jsonify(info="Vehicle deleted successfully"),200
 
 
-@vehicle_blueprint.route("/vehicles/<id>", methods=['GET'])
+@vehicle_blueprint.route("/api/vehicles/<id>", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def get(id:int):
     company_id = session["user"]["company_id"]
@@ -108,7 +108,7 @@ def get(id:int):
     return jsonify(vehicle=vehicle),200
 
 
-@vehicle_blueprint.route("/vehicles/all", methods=['GET'])
+@vehicle_blueprint.route("/api/vehicles/all", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def getAll():
     company_id = session["user"]["company_id"]

@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash
 
 driver_blueprint = Blueprint('driver', __name__,)
 
-@driver_blueprint.route("/drivers", methods=['POST'])
+@driver_blueprint.route("/api/drivers", methods=['POST'])
 @sessionDecorator.required_user("admin")
 def create():
     company_id = session["user"]["company_id"]
@@ -44,7 +44,7 @@ def create():
         abort(400)
 
 
-@driver_blueprint.route("/drivers/<id>", methods=['PUT'])
+@driver_blueprint.route("/api/drivers/<id>", methods=['PUT'])
 @sessionDecorator.required_user("admin")
 def update(id:int):
     company_id = session["user"]["company_id"]
@@ -77,7 +77,7 @@ def update(id:int):
         abort(400)
 
 
-@driver_blueprint.route("/drivers/<id>", methods=['DELETE'])
+@driver_blueprint.route("/api/drivers/<id>", methods=['DELETE'])
 @sessionDecorator.required_user("admin")
 def delete(id:int):
     company_id = session["user"]["company_id"]
@@ -88,7 +88,7 @@ def delete(id:int):
     return jsonify(info="Driver deleted successfully"),200
 
 
-@driver_blueprint.route("/drivers/<id>", methods=['GET'])
+@driver_blueprint.route("/api/drivers/<id>", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def get(id:int):
 
@@ -111,7 +111,7 @@ def get(id:int):
     return jsonify(driver=driver),200
 
 
-@driver_blueprint.route("/drivers/all", methods=['GET'])
+@driver_blueprint.route("/api/drivers/all", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def getAll():
     company_id = session["user"]["company_id"]
@@ -139,7 +139,7 @@ def getAll():
 
 
 
-@driver_blueprint.route("/drivers/location", methods=['PUT'])
+@driver_blueprint.route("/api/drivers/location", methods=['PUT'])
 @sessionDecorator.required_user("driver")
 @locationDecorator.checkLocation()
 def updateLocation(lat:int,lng:int):
@@ -148,7 +148,7 @@ def updateLocation(lat:int,lng:int):
     return jsonify(info="Location successfully updated")
 
 
-@driver_blueprint.route("/drivers/<driver_id>/deliveries/<delivery_id>", methods=['PUT'])
+@driver_blueprint.route("/api/drivers/<driver_id>/deliveries/<delivery_id>", methods=['PUT'])
 @sessionDecorator.required_user("admin")
 def assign_Delivery(driver_id:int, delivery_id:int):
     company_id = session["user"]["company_id"]

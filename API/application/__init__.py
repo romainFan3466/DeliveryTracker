@@ -1,7 +1,11 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect, send_file, session, render_template
 from flask_mail import Mail
 from application.core.DBHandler import DBHandler
+from flask.ext.cors import CORS
+
 app = Flask(__name__)
+cors = CORS(app, resources=r'/*', origins="http://127.0.0.1:8080", allow_headers="Content-Type", supports_credentials=True)
+# cors = CORS(app)
 
 app.config.update(
     DEBUG=True,
@@ -70,7 +74,5 @@ def unauthorized(error):
 @app.errorhandler(500)
 def bad_request(error):
     return jsonify(info="Internal error"),500
-
-
 
 

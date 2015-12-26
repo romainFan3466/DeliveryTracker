@@ -6,8 +6,9 @@ from application import db
 authentication_blueprint = Blueprint('authentication', __name__,)
 
 
-@authentication_blueprint.route("/signIn", methods=['POST'])
+@authentication_blueprint.route("/api/signIn", methods=['POST'])
 def sign_in():
+    r= request
     user_req = request.get_json(force=True)
     if(
        "user" in user_req and
@@ -31,22 +32,25 @@ def sign_in():
                         "type": user["type"],
                         "company_id": user["company_id"],
             }
-            return jsonify(info="Your are currently logged in"), 200
+            session.permanent = True
+
+            return jsonify(session=session["user"], info="Your are currently logged in"), 200
         else:
             return jsonify(info="Bad Credentials"),400
     else :
         abort(400)
 
 
-@authentication_blueprint.route("/logOut", methods=['GET'])
+@authentication_blueprint.route("/api/logOut", methods=['GET', "OPTIONS"])
 def log_out():
     if "user" in session:
         session.pop("user")
     return jsonify(info="Your are logged out"), 200
 
 
-@authentication_blueprint.route("/status", methods=['GET'])
+@authentication_blueprint.route("/api/status", methods=['GET'])
 def status():
+    va = request
     if "user" in session :
         return jsonify(session=session["user"])
     return jsonify(session="logout")
