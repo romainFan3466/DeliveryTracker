@@ -1,0 +1,64 @@
+<div>
+
+    <form role="form" name="form"
+          class=""
+          ng-submit="loginIn(user)">
+
+        <div class="row">
+            <div class="form-group center-block text-center">
+                <h2 class="form-signin-heading">Delivery Tracker App</h2>
+                <h3 class="form-signin-heading">Administrator</h3>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-sm-offset-3 col-sm-6 col-md-offset-4 col-md-4"
+                    ng-class="{'has-error has-feedback' : wrongCredentials }">
+                <label class="control-label" for="inputEmail">Email</label>
+                <input type="email"
+                       id="inputEmail"
+                       name="email"
+                       class="form-control"
+                       ng-model="user.email" required="" autofocus="">
+                <span ng-show="wrongCredentials" style="text-align: left" class="glyphicon glyphicon-remove form-control-feedback"></span>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="form-group col-sm-offset-3 col-sm-6 col-md-offset-4 col-md-4"
+                    ng-class="{'has-error has-feedback' : wrongCredentials }">
+                <label class="control-label" for="inputPassword">Password</label>
+                <input type="password"
+                       id="inputPassword"
+                       name="password"
+                       class="form-control"
+                       ng-model="user.password" required="">
+                <span ng-show="wrongCredentials" style="text-align: left" class="glyphicon glyphicon-remove form-control-feedback"></span>
+            </div>
+        </div>
+
+
+        <div class="row row-space" ng-show="wrongCredentials">
+            <div class=" form-group center-block text-center">
+                <span class=" alert alert-danger " >
+                    Bad email or password.Try again
+                </span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group center-block">
+                <div class="text-center">
+                <button class="btn btn-lg btn-primary "
+                        type="submit"
+                        ng-disabled="form.email.$invalid || form.password.$invalid">Sign In</button>
+                </div>
+
+            </div>
+        </div>
+
+    </form>
+
+
+</div>

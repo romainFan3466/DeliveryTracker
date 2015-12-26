@@ -1,12 +1,13 @@
-/**
- * Created by romain on 26/10/15.
- */
+
 var AppModule = angular.module('DeliveryTrackerAdmin.app', [
     'ngRoute' ,
     'ngResource',
     'angular.filter']);
 
-
+AppModule.config(['$httpProvider', function($httpProvider) {
+    $httpProvider.defaults.withCredentials = true;
+    //$httpProvider.defaults.useXDomain = true;
+}]);
 /**
  * @ngdoc object
  * @name appModule.object:Config
@@ -27,25 +28,73 @@ AppModule.constant('Config', {
      * The rest of the URL is completed by services, depends of the methods.
      * @returns {String} baseUrl
      */
-    baseUrl : "http://",
-    TVA : 0.20
+    baseUrl : "http://127.0.0.1:5000/api"
 });
+
+AppModule.run(["$rootScope", "$location", "$authentication","$log",
+    function ($rootScope, $location, $authentication, $log) {
+        $rootScope.$on("$routeChangeError", function (event, next, current, rejection) {
+            //$authentication.getSession().then(
+            //    function(result){
+            //        var auth = $authentication.isAuthenticated();
+            //        if(auth ==false){
+            //            event.preventDefault();
+            //            $location.path("/login");
+            //        }
+            //    },
+            //
+            //    function(result){
+            //        event.preventDefault();
+            //        $location.path("/login");
+            //    }
+            //);
+            //var auth = $authentication.isAuthenticated();
+            //if (auth == false) {
+            //    event.preventDefault();
+            //    $location.path("/login");
+            //}
+
+            $location.path("/login");
+
+        });
+    }
+]);
 
 
 AppModule.config(['$routeProvider', function ($routeProvider) {
 	var routes = [
-		{url: "/login", templateUrl: "templates/login.view.html"},
-        {url: "/home", templateUrl: "templates/home.template.html"},
-        {url: "/settings", templateUrl: "templates/settings.view.html"}
+		{url: "/login", templateUrl: "templates/login.html", controller:"LoginController"},
+        {url: "/home", templateUrl: "templates/home.html"},
+        {url: "/settings", templateUrl: "templates/settings.view.html"},
+
+        {url: "/customers/create", templateUrl: "templates/customer/create.customer.html", controller : "CreateCustomerController"},
+        {url: "/customers/edit", templateUrl: "templates/customer/edit.customer.html", controller : "EditCustomerController"},
+        {url: "/customers/list", templateUrl: "templates/customer/list.customer.html", controller : "ListCustomerController"},
+        
+        {url: "/vehicles/create", templateUrl: "templates/vehicle/create.vehicle.html", controller : "CreateVehicleController"},
+        {url: "/vehicles/edit", templateUrl: "templates/vehicle/edit.vehicle.html", controller : "EditVehicleController"},
+        {url: "/vehicles/list", templateUrl: "templates/vehicle/list.vehicle.html", controller : "ListVehicleController"},
+
+        {url: "/deliveries/create", templateUrl: "templates/delivery/create.delivery.html", controller : "CreateDeliveryController"},
+        {url: "/deliveries/edit", templateUrl: "templates/delivery/edit.delivery.html", controller : "EditDeliveryController"},
+        {url: "/deliveries/list", templateUrl: "templates/delivery/list.delivery.html", controller : "ListDeliveryController"},
+        {url: "/deliveries/assign", templateUrl: "templates/delivery/assign.delivery.html", controller : "AssignDeliveryController"},
+        
+        {url: "/drivers/create", templateUrl: "templates/driver/create.driver.html", controller : "CreateDriverController"},
+        {url: "/drivers/edit", templateUrl: "templates/driver/edit.driver.html", controller : "EditDriverController"},
+        {url: "/drivers/list", templateUrl: "templates/driver/list.driver.html", controller : "ListDriverController"}
 	];
 
 	$routeProvider.otherwise({redirectTo: '/home'});
 
 	angular.forEach(routes, function (route) {
-
-        /*route.resolve = {
-            resolve : "$start"
-            };*/
+        if(route.url != "/login"){
+            route.resolve = {
+                sess: function ($authentication) {
+                    return $authentication.getSession()
+                }
+            };
+        }
         $routeProvider.when(route.url, route);
 	});
 
@@ -119,56 +168,30 @@ AppModule.factory('SessionMapper',
     function () {
 
 
-        var SessionMapper = function (data) {
+        var SessionMapper = function (data, authenticated) {
 
-            /**
-             * @ngdoc property
-             * @name authenticated
-             * @propertyOf appModule.object:SessionMapper
-             * @description
-             * True if user is authenticated, else false
-             * @returns {boolean} identifier
-             */
-            this.authenticated = false;
 
-            /**
-             * @ngdoc property
-             * @name uid
-             * @propertyOf appModule.object:SessionMapper
-             * @description
-             * SessionMapper user identifier
-             * @returns {string} identifier
-             */
-            this.uid = "";
-
-            /**
-             * @ngdoc property
-             * @name email
-             * @propertyOf appModule.object:SessionMapper
-             * @description
-             * SessionMapper user email
-             * @returns {string} email
-             */
+            this.authenticated = authenticated;
+            this.id = "";
             this.email = "";
-
+            this.companyId = "";
+            this.type = "";
             if (angular.isDefined(data)) {
                 this.parse(data);
             }
         };
 
-        
-        /** @ngdoc method
-         * @name parse
-         * @methodOf appModule.object:SessionMapper
-         * @param {Object} data This object is supposed to have the same propriety than SessionMapper.
-         * @description
-         * Set all propriety matching by a provided object
-         */
         SessionMapper.prototype.parse = function(data){
             if (data) {
                 var self = this;
                 angular.forEach(data, function (value, key) {
-                    self[key] = value;
+                    if(key == "company_id"){
+                        self.companyId = value;
+                    }
+                    else {
+                        self[key] = value;
+                    }
+
                 });
             }
         };
@@ -177,70 +200,34 @@ AppModule.factory('SessionMapper',
         return SessionMapper;
     }
 );
-/**
- * @ngdoc overview
- * @name appModule
- * @description
- *
- * This is where all directives, services are regrouped for the project " Washing App"
- *
- *
- *
- */
 
-
-
-/**
- * @ngdoc service
- * @name appModule.service:$authentication
- * @require $http
- * @require SessionMapper
- * @require $q
- * @require Config
- * @description
- * This service provides all authentication functionalities from the API.
- *
- * Using this service, you can manage user session and allows to retrieve data from server.
- */
 AppModule.factory('$authentication',[
     "$http", "SessionMapper", "$q", "$log", "Config",
     function ($http, SessionMapper, $q, $log, Config) {
 
-
         var _modelSession = {
-            authenticated : true
+            authenticated : false
         };
 
         var _getSession = function(){
             var deferred = $q.defer();
 
             $http
-                .get(Config.baseUrl + '/php/session')
+                .get(Config.baseUrl + '/status')
                 .success(function (res) {
-                    _modelSession = new SessionMapper(res);
-
-                    deferred.resolve( {email : _modelSession.email});
+                    if(angular.isDefined(res.session) && res.session != "logout"){
+                        _modelSession = new SessionMapper(res.session, true);
+                        deferred.resolve( {name : _modelSession.name});
+                    }
+                    else{
+                        _modelSession = new SessionMapper(null, false);
+                        deferred.reject();
+                    }
                 })
                 .error(function(res){
-                    deferred.reject(res);
+                    _modelSession = new SessionMapper(null, false);
+                    deferred.reject();
                 });
-
-            return deferred.promise;
-        };
-
-
-        var _getUserData = function(){
-            var deferred = $q.defer();
-
-            $http
-                .post(Config.baseUrl + '/php/session/user', {})
-                .success(function (res) {
-                    deferred.resolve({user : res.user});
-                })
-                .error(function(res){
-                    deferred.reject({message : res.message});
-                });
-
             return deferred.promise;
         };
 
@@ -250,17 +237,16 @@ AppModule.factory('$authentication',[
             var cred = {
                 user : credentials
             };
-
             $http
-                .post(Config.baseUrl + '/php/login', cred)
+                .post(Config.baseUrl + '/signIn', cred)
                 .success(function (res) {
-                    _modelSession = new SessionMapper(res);
-                    deferred.resolve( {email : _modelSession.email});
+                    _modelSession = new SessionMapper(res.session, true);
+                    deferred.resolve( {name : _modelSession.name});
                 })
                 .error(function(res){
-                    deferred.reject({message : res.message});
+                    var info = (angular.isDefined(res.info))? res.info : null;
+                    deferred.reject({info : info});
                 });
-
             return deferred.promise;
         };
 
@@ -268,28 +254,15 @@ AppModule.factory('$authentication',[
         var _logout = function () {
             var deferred = $q.defer();
             $http
-                .get(Config.baseUrl + '/php/logout')
+                .get(Config.baseUrl + '/logOut')
                 .success(function (res) {
-                    _modelSession = new SessionMapper(res);
-                    deferred.resolve({message : res.message});
-                });
-
-            return deferred.promise;
-        };
-
-
-        var _signUp = function (credentials) {
-            var deferred = $q.defer();
-            var user = { user : credentials};
-            $http
-                .post(Config.baseUrl + '/php/signUp', user)
-                .success(function (res) {
-                    deferred.resolve(res);
+                    _modelSession = new SessionMapper(null, false);
+                    deferred.resolve({info : res.info});
                 })
                 .error(function(res){
-                    deferred.reject({message : res.message});
-                });
-
+                    _modelSession = new SessionMapper(null, false);
+                    deferred.resolve({info : res.info});
+                    });
             return deferred.promise;
         };
 
@@ -307,43 +280,119 @@ AppModule.factory('$authentication',[
         return {
             loginIn : _loginIn,
             logout  : _logout,
-            signUp  : _signUp,
             isAuthenticated : _isAuthenticated,
             getUserMail : _getUserMail,
-            getSession : _getSession,
-            getUserData : _getUserData
+            getSession : _getSession
         };
     }]
 );
 
 
-/**
- * @ngdoc controller
- * @name appModule.controller:LoginController
- * @require $scope
- * @require $authentication
- * @require $location
- * @require $modal
- *
- * @description
- *
- * Interacts with template : "login.view.html"
- *
- */
+AppModule.controller("CreateCustomerController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+
+
+AppModule.controller("EditCustomerController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+
+AppModule.controller("ListCustomerController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+
+AppModule.controller("AssignDeliveryController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+
+AppModule.controller("CreateDeliveryController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+        $scope.pickup = {
+            choice : "customer"
+        };
+
+        $scope.delivery= {
+            choice : "customer"
+        };
+    }
+
+]);
+
+
+AppModule.controller("EditDeliveryController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+
+
+AppModule.controller("ListDeliveryController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+
+
+AppModule.controller("CreateDriverController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+
+
+
+AppModule.controller("EditDriverController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+
+
+    }
+
+]);
+
+
+AppModule.controller("ListDriverController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+
+
+
+
 AppModule.controller("LoginController",[
-    "$scope", "$log", "$modal", "$authentication", "$location",
-    function ($scope, $log, $modal, $authentication, $location) {
+    "$scope", "$log", "$authentication", "$location","$timeout",
+    function ($scope, $log, $authentication, $location, $timeout) {
 
         $scope.login = {
             email : "",
             password : ""
-        };
-
-
-        $scope.signupCredentials = {
-            email:'',
-            password:'',
-            confirmedPassword:""
         };
 
         $scope.loading=false;
@@ -355,7 +404,13 @@ AppModule.controller("LoginController",[
             $authentication.loginIn(credentials).then(
                 function (result) {
                     $scope.loading=false;
-                    $location.path("/home");
+                    $timeout(
+                        function(){
+                            $location.path("/home");
+                        },
+                        2000
+                    )
+
                 },
                 function(result){
                     $scope.loading=false;
@@ -366,31 +421,13 @@ AppModule.controller("LoginController",[
         };
 
 
-
-
-
         $scope.logout = function () {
             $authentication.logout().then(function (results) {
             });
         };
 
 
-    $scope.openNewUserModal = function () {
-        var modalInstance = $modal.open({
-            templateUrl: 'html/views/newUser.modal.html',
-            controller: 'NewUserModalController'
-        });
 
-        modalInstance.result.then(
-            //result from login modal
-            function (info) {
-
-        },
-            //fail from login modal
-            function () {
-            $log.info('Error create user request : ' + new Date());
-        });
-    };
 
 
 }]);
@@ -463,3 +500,60 @@ AppModule.controller('NewUserModalController',[
     };
 
 }]);
+AppModule.controller("NavBarController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+        $scope.authenticated = false;
+
+        $scope.isAuthenticated = function(){
+            var v = $authentication.isAuthenticated();
+            $log.log(v)
+        };
+
+        $scope.$watch($authentication.isAuthenticated, function(value){
+            $scope.authenticated = value;
+        });
+
+        $scope.login = function(){
+            $location.path("/login")
+        };
+
+        $scope.logout = function(){
+            $authentication.logout().then(
+                function(){
+                    $location.path("/login")
+                },
+                function(){
+                    $location.path("/login")
+                }
+            )
+        };
+    }
+
+]);
+
+AppModule.controller("CreateVehicleController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+
+
+
+AppModule.controller("EditVehicleController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);
+AppModule.controller("ListVehicleController",[
+    "$scope", "$log", "$authentication", "$location",
+    function ($scope, $log, $authentication, $location) {
+
+    }
+
+]);

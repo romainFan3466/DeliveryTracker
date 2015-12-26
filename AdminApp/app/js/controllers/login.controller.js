@@ -1,30 +1,11 @@
-/**
- * @ngdoc controller
- * @name appModule.controller:LoginController
- * @require $scope
- * @require $authentication
- * @require $location
- * @require $modal
- *
- * @description
- *
- * Interacts with template : "login.view.html"
- *
- */
+
 AppModule.controller("LoginController",[
-    "$scope", "$log", "$modal", "$authentication", "$location",
-    function ($scope, $log, $modal, $authentication, $location) {
+    "$scope", "$log", "$authentication", "$location","$timeout",
+    function ($scope, $log, $authentication, $location, $timeout) {
 
         $scope.login = {
             email : "",
             password : ""
-        };
-
-
-        $scope.signupCredentials = {
-            email:'',
-            password:'',
-            confirmedPassword:""
         };
 
         $scope.loading=false;
@@ -36,7 +17,13 @@ AppModule.controller("LoginController",[
             $authentication.loginIn(credentials).then(
                 function (result) {
                     $scope.loading=false;
-                    $location.path("/home");
+                    $timeout(
+                        function(){
+                            $location.path("/home");
+                        },
+                        2000
+                    )
+
                 },
                 function(result){
                     $scope.loading=false;
@@ -47,31 +34,13 @@ AppModule.controller("LoginController",[
         };
 
 
-
-
-
         $scope.logout = function () {
             $authentication.logout().then(function (results) {
             });
         };
 
 
-    $scope.openNewUserModal = function () {
-        var modalInstance = $modal.open({
-            templateUrl: 'html/views/newUser.modal.html',
-            controller: 'NewUserModalController'
-        });
 
-        modalInstance.result.then(
-            //result from login modal
-            function (info) {
-
-        },
-            //fail from login modal
-            function () {
-            $log.info('Error create user request : ' + new Date());
-        });
-    };
 
 
 }]);

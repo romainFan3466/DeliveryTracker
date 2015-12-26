@@ -1,0 +1,224 @@
+
+<div class="container-fluid ng-cloak" ng-cloak>
+    <div class="row">
+        <h1 class="text-center">Create Delivery</h1>
+    </div>
+
+    <form role="form"
+          ng-submit=""
+          name="form">
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
+                <label for="InputCompany">Customer's Name</label>
+                <input type="text"
+                       name="company"
+                       ng-model="retrieved.customer"
+                       id="InputCompany"
+                       placeholder="Enter customer's name"
+                       typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue} | limitTo:8"
+                       typeahead-loading="loadingCompanies"
+                       typeahead-on-select='onSelectCustomer($item, $model, $label)'
+                       class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row row-space">
+            <div class="center-block">
+                <div class="text-center">
+                    <h3>Pick up</h3>
+                </div>
+            </div>
+            <hr>
+        </div>
+
+        <div class="row">
+
+            <div class="col-xs-offset-2 col-xs-2">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="optionsRadios" id="optionsRadios1" value="customer" ng-model="pickup.choice">
+                        Customer
+                    </label>
+                </div>
+            </div>
+
+
+            <div class="form-group col-xs-offset-1 col-xs-6">
+                <label for="InputName">Name</label>
+                <input type="text"
+                       ng-model="delivery.name"
+                       id="InputName"
+                       name="name"
+                       placeholder="Enter the delivery's name"
+                       class="form-control"
+                       ng-required="pickup.choice=='customer'"
+                       ng-disabled="pickup.choice!='customer'">
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-xs-offset-2 col-xs-2">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="optionsRadios" id="optionsRadios2" ng-model="pickup.choice" value="address">
+                        Address
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group col-xs-offset-1 col-xs-6">
+                <label for="InputAddress">Address</label>
+                <input type="text"
+                       ng-model="delivery.name"
+                       id="InputAddress"
+                       name="name"
+                       placeholder="Enter the delivery's name"
+                       class="form-control"
+                       ng-required="pickup.choice=='address'"
+                       ng-disabled="pickup.choice!='address'">
+            </div>
+        </div>
+
+        <div class="row row-space">
+            <div class="center-block">
+                <div class="text-center">
+                    <h3>Delivery</h3>
+                </div>
+            </div>
+            <hr>
+        </div>
+
+        <div class="row">
+
+            <div class="col-xs-offset-2 col-xs-2">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="optionsRadios2" id="optionsRadios13" ng-model="delivery.choice" value="customer">
+                        Customer
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group col-xs-offset-1 col-xs-6">
+                <label for="InputNameBis">Name</label>
+                <input type="text"
+                       ng-model="delivery.name"
+                       id="InputNameBis"
+                       name="name"
+                       placeholder="Enter the delivery's name"
+                       class="form-control"
+                       ng-required="delivery.choice=='customer'"
+                       ng-disabled="delivery.choice!='customer'">
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-xs-offset-2 col-xs-2">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="optionsRadios2" id="optionsRadios14" ng-model="delivery.choice" value="address">
+                        Address
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group col-xs-offset-1 col-xs-6">
+                <label for="InputAddressBis">Address</label>
+                <input type="text"
+                       ng-model="delivery.name"
+                       id="InputAddressBis"
+                       name="name"
+                       placeholder="Enter the delivery's name"
+                       class="form-control"
+                       ng-required="delivery.choice=='address'"
+                       ng-disabled="delivery.choice!='address'">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
+                    <label for="InputType">Delivery Type</label>
+                    <input type="text"
+                           ng-model="customer.name"
+                           id="InputType"
+                           name="name"
+                           placeholder="Enter the customer's name"
+                           class="form-control" required>
+                </div>
+
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
+                    <label for="InputWeight">Weight</label>
+                    <input type="text"
+                           ng-model="customer.name"
+                           id="InputWeight"
+                           name="name"
+                           placeholder="Enter the customer's name"
+                           class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
+                    <label for="InputArea">Area</label>
+                    <input type="text"
+                           ng-model="customer.name"
+                           id="InputArea"
+                           name="name"
+                           placeholder="Enter the customer's name"
+                           class="form-control" required>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
+                <label for="InputInfo">Informations (optional) </label>
+                    <textarea type="text" rows="3" class="form-control" id="InputInfo"
+                              placeholder="Enter the full delivery's address"
+                              ng-model="delivery.address"></textarea>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="form-group center-block">
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success"
+                            ng-disabled="form.name.$invalid">Create
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+
+
+    <div class="row">
+        <div class="center-block text-center">
+            <span ng-show="success && form.name.$invalid" class="alert alert-success">
+                <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                Delivery created successfully
+            </span>
+
+            <span ng-show="error && !success" class="alert alert-danger">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                Delivery not created
+            </span>
+
+            <span ng-show="invalidName" class="alert alert-danger">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                error : {{error.info}}
+            </span>
+
+            <!--<spinner loading="loading"></spinner>-->
+        </div>
+    </div>
+

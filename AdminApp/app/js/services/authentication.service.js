@@ -1,67 +1,31 @@
-/**
- * @ngdoc overview
- * @name appModule
- * @description
- *
- * This is where all directives, services are regrouped for the project " Washing App"
- *
- *
- *
- */
 
-
-
-/**
- * @ngdoc service
- * @name appModule.service:$authentication
- * @require $http
- * @require SessionMapper
- * @require $q
- * @require Config
- * @description
- * This service provides all authentication functionalities from the API.
- *
- * Using this service, you can manage user session and allows to retrieve data from server.
- */
 AppModule.factory('$authentication',[
     "$http", "SessionMapper", "$q", "$log", "Config",
     function ($http, SessionMapper, $q, $log, Config) {
 
-
         var _modelSession = {
-            authenticated : true
+            authenticated : false
         };
 
         var _getSession = function(){
             var deferred = $q.defer();
 
             $http
-                .get(Config.baseUrl + '/php/session')
+                .get(Config.baseUrl + '/status')
                 .success(function (res) {
-                    _modelSession = new SessionMapper(res);
-
-                    deferred.resolve( {email : _modelSession.email});
+                    if(angular.isDefined(res.session) && res.session != "logout"){
+                        _modelSession = new SessionMapper(res.session, true);
+                        deferred.resolve( {name : _modelSession.name});
+                    }
+                    else{
+                        _modelSession = new SessionMapper(null, false);
+                        deferred.reject();
+                    }
                 })
                 .error(function(res){
-                    deferred.reject(res);
+                    _modelSession = new SessionMapper(null, false);
+                    deferred.reject();
                 });
-
-            return deferred.promise;
-        };
-
-
-        var _getUserData = function(){
-            var deferred = $q.defer();
-
-            $http
-                .post(Config.baseUrl + '/php/session/user', {})
-                .success(function (res) {
-                    deferred.resolve({user : res.user});
-                })
-                .error(function(res){
-                    deferred.reject({message : res.message});
-                });
-
             return deferred.promise;
         };
 
@@ -71,17 +35,16 @@ AppModule.factory('$authentication',[
             var cred = {
                 user : credentials
             };
-
             $http
-                .post(Config.baseUrl + '/php/login', cred)
+                .post(Config.baseUrl + '/signIn', cred)
                 .success(function (res) {
-                    _modelSession = new SessionMapper(res);
-                    deferred.resolve( {email : _modelSession.email});
+                    _modelSession = new SessionMapper(res.session, true);
+                    deferred.resolve( {name : _modelSession.name});
                 })
                 .error(function(res){
-                    deferred.reject({message : res.message});
+                    var info = (angular.isDefined(res.info))? res.info : null;
+                    deferred.reject({info : info});
                 });
-
             return deferred.promise;
         };
 
@@ -89,28 +52,15 @@ AppModule.factory('$authentication',[
         var _logout = function () {
             var deferred = $q.defer();
             $http
-                .get(Config.baseUrl + '/php/logout')
+                .get(Config.baseUrl + '/logOut')
                 .success(function (res) {
-                    _modelSession = new SessionMapper(res);
-                    deferred.resolve({message : res.message});
-                });
-
-            return deferred.promise;
-        };
-
-
-        var _signUp = function (credentials) {
-            var deferred = $q.defer();
-            var user = { user : credentials};
-            $http
-                .post(Config.baseUrl + '/php/signUp', user)
-                .success(function (res) {
-                    deferred.resolve(res);
+                    _modelSession = new SessionMapper(null, false);
+                    deferred.resolve({info : res.info});
                 })
                 .error(function(res){
-                    deferred.reject({message : res.message});
-                });
-
+                    _modelSession = new SessionMapper(null, false);
+                    deferred.resolve({info : res.info});
+                    });
             return deferred.promise;
         };
 
@@ -128,11 +78,9 @@ AppModule.factory('$authentication',[
         return {
             loginIn : _loginIn,
             logout  : _logout,
-            signUp  : _signUp,
             isAuthenticated : _isAuthenticated,
             getUserMail : _getUserMail,
-            getSession : _getSession,
-            getUserData : _getUserData
+            getSession : _getSession
         };
     }]
 );

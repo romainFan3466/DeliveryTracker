@@ -5,6 +5,7 @@
 module.exports = function (grunt) {
 
 	// Paths.
+	//var buildPath = "../API/application/templates";
 	var buildPath = "./app";
 	var configPath = "./config";
     var appPath = "./app";
@@ -84,7 +85,7 @@ module.exports = function (grunt) {
 
 
 	// Register tasks.
-	grunt.registerTask("minify", ["less", "concat", "uglify"]);
+	grunt.registerTask("minify", ["less", "concat"]);
 
 // Main Archive Task.
 
@@ -92,10 +93,8 @@ module.exports = function (grunt) {
     grunt.registerTask("deploy-git",  ["sync"]);
 
     // Main Task.
-    grunt.registerTask("deploy", ["clean:post-deploy","minify", "copy","patternReplace","clean:pre-deploy", "ftpush"]);
+    grunt.registerTask("deploy", ["clean:pre-deploy","minify", "copy:html"]);
 
-    // Doc Task.
-    grunt.registerTask("doc", ["clean:doc","ngdocs", "ftpush"]);
 
     // Default task.
     grunt.registerTask("default", ["bower", "deploy"]);
