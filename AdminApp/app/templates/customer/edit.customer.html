@@ -1,10 +1,124 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
 
-</body>
-</html>
+<div class="container-fluid ng-cloak"ng-cloak>
+    <div class="row">
+        <h1 class="text-center">Edit Customer</h1>
+    </div>
+
+    <div class="row row-lg-space">
+        <div class="col-md-offset-3 col-md-6">
+            <label for="InputCompany">Customer's name</label>
+            <input type="text"
+                   ng-model="retrieved"
+                   id="InputCompany"
+                   class="form-control"
+                   placeholder="Enter the customer's name"
+                   uib-typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
+                   typeahead-on-select='onSelect($item, $model, $label)'
+                   typeahead-no-results="noResults">
+            <!--<spinner loading="loading"></spinner>-->
+        </div>
+    </div>
+
+
+            <form name="form" class="form-horizontal">
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Name</label>
+
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="inputName"
+                                       ng-model="customer.name"
+                                       name="nameCustomer"
+                                       ng-disabled="!editor"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="inputAddress" class="col-sm-2 control-label">Address</label>
+
+                        <div class="col-sm-8">
+                            <input ng-model="address"
+                                   details="details"
+                                   googleplace
+                                   class="form-control"
+                                   name="address"
+                                   id="InputAddress"
+                                   ng-disabled="!editor"
+                                   required/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="inputPhone" class="col-sm-3 control-label">Phone number</label>
+
+                        <div class="col-sm-4">
+                            <input type="text"
+                                   class="form-control"
+                                   id="inputPhone"
+                                   placeholder="Enter phone number"
+                                   ng-model="customer.phone"
+                                   ng-disabled="!editor">
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+
+
+    <div class="row row-lg-space">
+        <button class="btn btn-danger col-xs-offset-5 col-xs-2 col-sm-offset-2 col-sm-2 col-space"
+                ng-click="remove(customer)"
+                ng-disabled="!found">
+            Delete
+        </button>
+        <button class="btn btn-primary col-xs-offset-5 col-xs-2 col-space col-sm-offset-1 col-sm-2"
+                ng-click="editor=true"
+                ng-disabled="!found"
+                ng-show="!editor">
+            Edit
+        </button>
+        <button class="btn btn-success col-xs-offset-5 col-xs-2 col-sm-offset-1 col-sm-2 col-space"
+                ng-click="update(customer)"
+                ng-show="editor"
+                ng-disabled="form.$invalid">
+            Update
+        </button>
+        <button class="btn primary col-xs-offset-5 col-xs-2 col-sm-offset-1 col-sm-2 col-space"
+                ng-click="resetChange()"
+                ng-show="editor">
+            Reset
+        </button>
+    </div>
+
+
+    <div class="row" ng-show="updated">
+        <div class="center-block text-center">
+           <span class="alert alert-success">
+           <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+           Updated customer
+            </span>
+        </div>
+    </div>
+
+    <div class=" row" ng-show="deleted && retrieved===''">
+        <div class="center-block text-center"><span class="alert alert-success">
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            Deleted customer
+        </span></div>
+    </div>
+
+    <div class="row" ng-show="error">
+        <div class="center-block text-center">
+            <span class="alert alert-danger ">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            Error : {{errorInfo}}
+        </span></div>
+    </div>
+</div>

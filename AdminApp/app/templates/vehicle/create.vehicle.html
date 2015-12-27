@@ -1,0 +1,98 @@
+<div class="container-fluid ng-cloak" ng-cloak>
+    <div class="row">
+        <h1 class="text-center">Create Vehicle</h1>
+    </div>
+
+
+    <form role="form"
+          ng-submit="add(vehicle)"
+          name="form">
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
+                <label for="InputName">Registration</label>
+                <input type="text"
+                       ng-model="vehicle.name"
+                       id="InputName"
+                       name="name"
+                       placeholder="Enter the vehicle name"
+                       class="form-control" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
+                <label for="InputType">Type</label>
+                <input type="text" class="form-control" id="InputType"
+                       placeholder="Enter the vehicle type"
+                       ng-model="vehicle.type">
+            </div>
+        </div>
+
+        <div class="row form-inline">
+            <div class="form-group col-sm-offset-3 col-sm-3">
+                <label for="InputWeight">Max weight</label>
+                <input type="text" class="form-control" id="InputWeight"
+                       placeholder="Enter the vehicle type"
+                       ng-model="vehicle.type">
+            </div>
+
+            <div class="form-group col-sm-3">
+                <label for="InputSize">Max size</label>
+                <input type="text" class="form-control" id="InputSize"
+                       placeholder="Enter the vehicle type"
+                       ng-model="vehicle.type">
+            </div>
+        </div>
+
+
+                <!--<div class="form-group">-->
+                        <!--<label for="InputCountry">Country</label>-->
+                        <!--<input type="text"-->
+                               <!--ng-model="vehicle.country"-->
+                               <!--typeahead="address.country for address in getLocation($viewValue) |  limitTo:10"-->
+                               <!--class="form-control"-->
+                               <!--placeholder="{{ 'vehicle.enter_country' | translate }}"-->
+                               <!--typeahead-on-select='onSelect($item, $model, $label)'-->
+                               <!--typeahead-loading="loadingLocations">-->
+
+                        <!--<span ng-show="loadingLocations" class="fa fa-spinner fa-spin"></span>-->
+                    <!--</div>-->
+
+        
+
+        <div class="row row-space">
+            <div class="form-group center-block">
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success"
+                            ng-disabled="form.name.$invalid">Create
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+    </form>
+
+
+    <div class="row">
+        <div class="center-block text-center">
+            <span ng-show="success && form.name.$invalid" class="alert alert-success">
+                <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                Vehicle created successfully
+            </span>
+
+            <span ng-show="error && !success" class="alert alert-danger">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                 Vehicle not created
+            </span>
+
+            <span ng-show="invalidName" class="alert alert-danger">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                Error : {{error.info}}
+            </span>
+
+            <spinner loading="loading"></spinner>
+        </div>
+    </div>
+</div>
