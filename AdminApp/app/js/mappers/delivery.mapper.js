@@ -1,0 +1,5 @@
+AppModule.factory('DeliveryMapper',
+    function () {
+
+    }
+);
