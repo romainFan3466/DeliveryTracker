@@ -93,7 +93,7 @@ module.exports = function (grunt) {
     grunt.registerTask("deploy-git",  ["sync"]);
 
     // Main Task.
-    grunt.registerTask("deploy", ["clean:pre-deploy","minify", "copy:html"]);
+    grunt.registerTask("deploy", ["clean:pre-deploy","minify"]);
 
 
     // Default task.

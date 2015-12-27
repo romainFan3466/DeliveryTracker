@@ -36,7 +36,8 @@
                 "<%= appPath %>/js/directives/**/*.js",
                 "<%= appPath %>/js/mappers/**/*.js",
                 "<%= appPath %>/js/services/**/*.js",
-                "<%= appPath %>/js/controllers/**/*.js"
+                "<%= appPath %>/js/controllers/**/*.js",
+                "<%= appPath %>/js/filters/**/*.js"
             ],
             "dest": "<%= buildPath %>/js/deliveryTracker-app.js"
         },
@@ -48,7 +49,9 @@
                 "<%= vendorPath %>/angular-resource/angular-resource.min.js",
                 "<%= vendorPath %>/angular-filter/dist/angular-filter.min.js",
 	            "<%= vendorPath %>/jquery/dist/jquery.js",
-                "<%= vendorPath %>/bootstrap/dist/js/bootstrap.min.js"
+                "<%= vendorPath %>/bootstrap/dist/js/bootstrap.min.js",
+                "<%= vendorPath %>/angular-bootstrap/ui-bootstrap.min.js",
+                "<%= vendorPath %>/angular-bootstrap/ui-bootstrap-tpls.min.js"
             ],
             "dest": "<%= buildPath %>/js/deliveryTracker-lib.min.js"
         }
@@ -120,18 +123,6 @@
         "options": {
           "nospawn": true,
           "atBegin": true
-        }
-      },
-      "html": {
-        "files": [
-          "<%= appPath %>/templates/**/*.html",
-          "<%= appPath %>/index.html"
-        ],
-        "tasks": [
-          "copy:html"
-        ],
-        "options": {
-          "nospawn": true
         }
       },
       "jsApp": {
