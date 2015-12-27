@@ -1,0 +1,5 @@
+AppModule.factory('VehicleMapper',
+    function () {
+
+    }
+);
