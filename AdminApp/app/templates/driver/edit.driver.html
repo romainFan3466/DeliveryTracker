@@ -1,10 +1,117 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
 
-</body>
-</html>
+<div class="container-fluid ng-cloak"ng-cloak>
+    <div class="row">
+        <h1 class="text-center">Edit Driver</h1>
+    </div>
+
+    <div class="row row-lg-space">
+        <div class="col-md-offset-3 col-md-6">
+            <label for="InputCompany">Driver's name</label>
+            <input type="text"
+                   ng-model="retrieved"
+                   id="InputCompany"
+                   class="form-control"
+                   placeholder="Enter the driver's name"
+                   typeahead="driver as driver.name for driver in drivers | filter:{name:$viewValue}| limitTo:8 "
+                   typeahead-on-select='onSelect($item, $model, $label)'>
+            <!--<spinner loading="loading"></spinner>-->
+        </div>
+    </div>
+
+            <form name="form" class="form-horizontal">
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Name</label>
+
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="inputName"
+                                       ng-model="driver.name"
+                                       name="nameDriver"
+                                       ng-disabled="!editor"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+                
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="inputAddress" class="col-sm-2 control-label">Email</label>
+
+                            <div class="col-sm-8">
+                                <input type="email" class="form-control" id="inputAddress"
+                                       ng-disabled="!editor"
+                                       ng-model="driver.email">
+                            </div>
+                        </div>
+                    </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="inputPhone" class="col-sm-3 control-label">Phone number</label>
+
+                        <div class="input-group col-sm-4">
+                            <div class="input-group-addon">+353</div>
+                            <input type="text"
+                                   class="form-control"
+                                   id="inputPhone"
+                                   placeholder="Enter phone number"
+                                   ng-model="driver.phone"
+                                   ng-disabled="!editor">
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+
+
+    <div class="row row-lg-space">
+        <button class="btn btn-danger col-xs-offset-5 col-xs-2 col-sm-offset-2 col-sm-2 col-space"
+                ng-click="remove(driver)"
+                ng-disabled="!found">
+            Delete
+        </button>
+        <button class="btn btn-primary col-xs-offset-5 col-xs-2 col-space col-sm-offset-1 col-sm-2"
+                ng-click="editor=true"
+                ng-disabled="!found"
+                ng-show="!editor">
+            Edit
+        </button>
+        <button class="btn btn-success col-xs-offset-5 col-xs-2 col-sm-offset-1 col-sm-2 col-space"
+                ng-click="update(driver)"
+                ng-show="editor"
+                ng-disabled="form.$invalid">
+            Update
+        </button>
+        <button class="btn primary col-xs-offset-5 col-xs-2 col-sm-offset-1 col-sm-2 col-space"
+                ng-click="resetChange()"
+                ng-show="editor">
+            Reset
+        </button>
+    </div>
+
+
+    <div class="row" ng-show="edited && retrieved===''">
+        <div class="center-block text-center">
+           <span class="alert alert-success">
+           <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+           Updated driver
+            </span>
+        </div>
+    </div>
+
+    <div class=" row" ng-show="deleted && retrieved===''">
+        <div class="center-block text-center"><span class="alert alert-success">
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            Deleted driver
+        </span></div>
+    </div>
+
+    <div class="row" ng-show="doublon">
+        <div class="center-block text-center">
+            <span class="alert alert-danger ">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            Error : {{error.info}}
+        </span></div>
+    </div>
+</div>

@@ -41,43 +41,43 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button"
                            aria-haspopup="true" aria-expanded="false">Customer <span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li><a href="#/customers/create">Create</a></li>
-                            <li><a href="#">Edit</a></li>
-                            <li><a href="#">List</a></li>
+                            <li><a href="#/customers/edit">Edit</a></li>
+                            <li><a href="#/customers/list">List</a></li>
                         </ul>
                     </li>
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button"
                            aria-haspopup="true" aria-expanded="false">Driver <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#/">Create</a></li>
-                            <li><a href="#">Edit</a></li>
-                            <li><a href="#">List</a></li>
+                            <li><a href="#/drivers/create">Create</a></li>
+                            <li><a href="#/drivers/edit">Edit</a></li>
+                            <li><a href="#/drivers/list">List</a></li>
                             <li role="separator" class="divider"></li>
-                            <li><a href="#">Live Tracking</a></li>
+                            <li><a href="#/drivers/live">Live Tracking</a></li>
                         </ul>
                     </li>
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button"
                            aria-haspopup="true" aria-expanded="false">Vehicles <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="#">Create</a></li>
-                            <li><a href="#">Edit</a></li>
-                            <li><a href="#">List</a></li>
+                            <li><a href="#/vehicles/create">Create</a></li>
+                            <li><a href="#/vehicles/edit">Edit</a></li>
+                            <li><a href="#/vehicles/list">List</a></li>
                         </ul>
                     </li>
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button"
                            aria-haspopup="true" aria-expanded="false">Delivery <span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li><a href="#/deliveries/create">Create</a></li>
-                            <li><a href="#">Edit</a></li>
-                            <li><a href="#">List</a></li>
+                            <li><a href="#/deliveries/edit">Edit</a></li>
+                            <li><a href="#/deliveries/list">List</a></li>
                             <li role="separator" class="divider"></li>
-                            <li><a href="#">Assignment</a></li>
+                            <li><a href="#/deliveries/assign">Assignment</a></li>
                         </ul>
                     </li>
                     <li><a href="#">Routes</a></li>
@@ -102,6 +102,7 @@
 
 		<!-- Application -->
         <script src="js/deliveryTracker-lib.min.js"></script>
+        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBR5bnoNn5axqfDL4607PRDugxM7Lku-9M&libraries=places"></script>
         <script src="js/deliveryTracker-app.js"></script>
 
 		<!-- v[[pkg.version]] -->

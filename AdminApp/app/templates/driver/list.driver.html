@@ -1,6 +1,6 @@
-<div ng-controller="ListVehicleController" class="ng-cloak" ng-cloak>
+<div ng-controller="ListDriverController" class="ng-cloak" ng-cloak>
     <div class="row">
-        <h1 class="text-center">List Vehicles</h1>
+        <h1 class="text-center">List Drivers</h1>
     </div>
 
     <div class="row row-lg-space">
@@ -39,26 +39,24 @@
                                       ng-show="active.id">
                                 </span>
                         </th>
-                        <th>Registration</th>
-                        <th>Type</th>
-                        <th>Max Weight</th>
-                        <th>Max Size</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
 
                         <th  class="text-center">Edit</th>
 
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="vehicle in vehicles">
-                        <td>{{vehicle.ID}}</td>
-                        <td>{{vehicle.registration}}</td>
-                        <td>{{vehicle.type}}</td>
-                        <td>{{vehicle.maxWeight}}</td>
-                        <td>{{vehicle.maxSize}}</td>
+                    <tr ng-repeat="driver in drivers">
+                        <td>{{driver.id}}</td>
+                        <td>{{driver.name}}</td>
+                        <td>{{driver.email}}</td>
+                        <td>{{driver.phone}}</td>
                         <td class="text-center"><span class=" btn btn-primary fa fa-pencil-square-o"
-                                ng-go="/vehicle/edit/{{vehicle.ID}}"></span></td>
+                                ng-go="/driver/edit/{{driver.ID}}"></span></td>
                         <td class="text-center"><a class=" btn btn-danger fa fa-file-pdf-o"
-                                                   target="_blank" ng-href="/php/qrCode/vehicles/{{vehicle.ID}}"></a></td>
+                                                   target="_blank" ng-href="/php/qrCode/drivers/{{driver.ID}}"></a></td>
                     </tr>
                     </tbody>
                 </table>

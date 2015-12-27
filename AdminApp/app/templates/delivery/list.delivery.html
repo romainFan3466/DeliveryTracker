@@ -1,10 +1,264 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+<div class="ng-cloak" ng-cloak ng-controller="ListDeliveryController">
+    <div class="row">
+        <h1 class="text-center">List deliveries</h1>
+    </div>
+    <div class="row-lg-space">
 
-</body>
-</html>
+            <form class="" ng-submit="search()">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="inputDateFrom" class="text-right col-sm-offset-3 col-sm-1 control-label">From</label>
+                        <div class="col-sm-5">
+                            <p class="input-group">
+                                <input type="text" class="form-control" datepicker-popup="{{format}}"
+                                       ng-model="dt.from"
+                                       id="inputDateFrom"
+                                       is-open="openedFrom"
+                                       datepicker-options="dateOptions"
+                                       date-disabled="disabled(date, mode)"
+                                       ng-required="true"
+                                       min-date ="01-01-2015"
+                                       max-date ="{{now}}"
+                                       close-text="Close"
+                                       ng-disabled="deliveryIDInput.checked"/>
+              <span class="input-group-btn">
+                <button type="button"
+                        class="btn btn-default"
+                        ng-click="open($event,'from')"
+                        ng-disabled="deliveryIDInput.checked">
+                    <i class="glyphicon glyphicon-calendar"></i>
+                </button>
+              </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="inputDateTo" class="text-right col-sm-offset-3 col-sm-1 control-label">To</label>
+                        <div class="col-sm-5">
+                            <p class="input-group">
+                                <input type="text" class="form-control" datepicker-popup="{{format}}"
+                                       id="inputDateTo"
+                                       ng-model="dt.to"
+                                       is-open="openedTo"
+                                       datepicker-options="dateOptions"
+                                       date-disabled="disabled(date, mode)"
+                                       ng-required="true"
+                                       min-date ="dt.from"
+                                       max-date ="{{now}}"
+                                       close-text="Close"
+                                       ng-disabled="deliveryIDInput.checked"/>
+              <span class="input-group-btn">
+                <button type="button"
+                        class="btn btn-default"
+                        ng-click="open($event,'to')"
+                        ng-disabled="deliveryIDInput.checked">
+                    <i class="glyphicon glyphicon-calendar"></i>
+                </button>
+              </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="InputCustomerName" class="text-right col-sm-offset-2 col-sm-2 control-label">Customer's name
+                            <small class="text-muted">(optional)</small>
+                        </label>
+                        <div class="col-sm-5">
+                            <input type="text"
+                                   name="company"
+                                   ng-model="retrieved.customer"
+                                   id="InputCustomerName"
+                                   placeholder="Enter a customer's name"
+                                   typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
+                                   typeahead-loading="loadingCompanies"
+                                   typeahead-on-select='onSelectCustomer($item, $model, $label)'
+                                   class="form-control"
+                                   ng-disabled="deliveryIDInput.checked">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label for="InputDriverName" class="text-right col-sm-offset-2 col-sm-2 control-label">Driver's name
+                            <small class="text-muted">(optional)</small>
+                        </label>
+                        <div class="col-sm-5">
+                            <input type="text"
+                                   name="company"
+                                   ng-model="retrieved.driver"
+                                   id="InputDriverName"
+                                   placeholder="Enter a driver's name"
+                                   typeahead="driver as driver.name for driver in drivers | filter:{name:$viewValue}| limitTo:8 "
+                                   typeahead-loading="loadingCompanies"
+                                   typeahead-on-select='onSelectDriver($item, $model, $label)'
+                                   class="form-control"
+                                   ng-disabled="deliveryIDInput.checked">
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-8">
+                        <hr/>
+                    </div>
+                </div>
+
+
+
+                <div class="row">
+                    <div class="form-group">
+
+                        <div class="chekbox col-sm-offset-3 col-sm-2">
+                            <label>
+                            <input type="checkbox" value="" ng-model="deliveryIDInput.checked">
+                                Delivery ID
+                            </label>
+                        </div>
+
+                        <div class="col-sm-3">
+                            <input type="text" class="form-control"
+                                   ng-disabled="!deliveryIDInput.checked"
+                                   ng-model="delivery.ID">
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-8">
+                        <hr/>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="form-group col-sm-offset-4 col-sm-3">
+                        <label> No assigned</label>
+                        <div class="checkbox ">
+                            <label>
+                                <input type="checkbox"
+                                       ng-model="deliveryType.delivery">
+                                Assigned
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="form-group center-block text-center">
+                        <button class="btn btn-primary"
+                                type="submit"
+                                ng-disabled="!deliveryType.delivery && !deliveryType.receipt">
+                            <span class="fa fa-search"></span> Search </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+
+    <div class="row row-lg-space">
+        <div class=" col-sm-offset-1 col-sm-10">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th class="table-sortable"
+                            ng-click="reverse=!reverse ;order('ID', reverse)">
+                                ID
+                                <span class="fa"
+                                      ng-class="{ 'fa-caret-down' :reverse , 'fa-caret-up':!reverse}"
+                                      ng-show="active.ID">
+                                </span>
+                        </th>
+                        <th class="table-sortable"
+                            ng-click="reverse=!reverse ;order('customer.name', reverse)">
+                                Customer
+                            <span class="fa"
+                                  ng-class="{ 'fa-caret-down' :reverse , 'fa-caret-up':!reverse}"
+                                  ng-show="active.customerName">
+                            </span>
+                        </th>
+                        <th class="table-sortable text-center"
+                            ng-click="reverse=!reverse ;order('created', reverse)">
+                                Created
+                            <span class="fa"
+                                  ng-class="{ 'fa-caret-down' :reverse , 'fa-caret-up':!reverse}"
+                                  ng-show="active.created">
+                            </span>
+                        </th>
+                        <th class="table-sortable text-center"
+                            ng-click="reverse=!reverse ;order('updated', reverse)">
+                                Updated
+                            <span class="fa"
+                                  ng-class="{ 'fa-caret-down' :reverse , 'fa-caret-up':!reverse}"
+                                  ng-show="active.updated">
+                            </span>
+                        </th>
+                        <th class="table-sortable text-center"
+                            ng-click="reverse=!reverse ;order('status', reverse)">
+                                Status
+                            <span class="fa"
+                                  ng-class="{ 'fa-caret-down' :reverse , 'fa-caret-up':!reverse}"
+                                  ng-show="active.status">
+                            </span>
+                        </th>
+
+                        <th class="text-center">View</th>
+                        <th class="text-center">Edit</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="delivery in deliverys |limitTo:limitReq:offsetReq" ng-class="{warning : sortTotalPrice(delivery)<0}">
+                        <td>{{delivery.ID}}</td>
+                        <td>{{ delivery.customer.name}}</td>
+                        <td class="text-center">{{delivery.created | date:'dd-MMMM-yyyy HH:mm:ss'}}</td>
+                        <td class="text-center">{{delivery.updated | date:'dd-MMMM-yyyy HH:mm:ss'}}</td>
+                        <td class="text-center">{{delivery.status}}</td>
+
+                        <td class="text-center"><a class=" btn btn-primary fa fa-eye"
+                               ng-href="#/delivery/list/{{delivery.ID}}"
+                               target="_blank"></a></td>
+
+                        <td class="text-center"><a class=" btn btn-danger fa fa-square-o"
+                               ng-href="#/delivery/list/{{delivery.ID}}"
+                               target="_blank"></a></td>
+
+                    </tr>
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+     </div>
+
+    <div class="row">
+        <div class="block-center text-center">
+            <pagination total-items="bigTotalItems"
+                        ng-model="currentPage"
+                        max-size="4"
+                        items-per-page="15"
+                        ng-change="pageChanged(currentPage)"
+                        class="pagination-sm"
+                        boundary-links="true"
+                        rotate="false"
+                        num-pages="numPages">
+            </pagination>
+        </div>
+    </div>
+
+
+
+<spinner loading="loading"></spinner>
+</div>
