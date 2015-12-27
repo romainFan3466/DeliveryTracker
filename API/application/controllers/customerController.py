@@ -17,7 +17,8 @@ def create():
         "location" in customer_data["customer"] and
         "lat" in customer_data["customer"]["location"] and
         "lng" in customer_data["customer"]["location"] and
-        "phone" in customer_data["customer"]
+        "phone" in customer_data["customer"] and
+        Location.isValid(**customer_data["customer"]["location"])
         ):
 
         ### check customer name duplication
@@ -65,14 +66,15 @@ def update(id:int):
         #location
         if ("location" in customer_data["customer"] and
             "lat" in customer_data["customer"]["location"] and
-            "lng" in customer_data["customer"]["location"]
+            "lng" in customer_data["customer"]["location"] and
+            Location.isValid(**customer_data["customer"]["location"])
             ):
             customer["location_lat"] = customer_data["customer"]["location"]["lat"]
             customer["location_lng"] = customer_data["customer"]["location"]["lng"]
 
         #phone
         if "phone" in customer_data["customer"]:
-            customer["phone"] = customer_data["customer"]
+            customer["phone"] = customer_data["customer"]["phone"]
 
         db.update(table="customers", params=customer, conditions={"id":id})
         return jsonify(info="Customer data updated successfully"),200
@@ -138,6 +140,3 @@ def getAll():
         customers.append(c)
 
     return jsonify(customers=customers),200
-
-
-
