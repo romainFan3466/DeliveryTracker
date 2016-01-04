@@ -24,7 +24,10 @@
     "angular-filter": "~0.5.7",
     "ngstorage": "~0.3.9",
     "font-awesome": "fontawesome#~4.4.0",
-    "angular-bootstrap": "~0.14.3"
+    "angular-bootstrap": "~0.14.3",
+    "install": "~1.0.4",
+    "angular-google-maps": "~2.2.1",
+    "humps": "~1.0.0"
   },
   "devDependencies": {},
   "license": "GNU-3.0",

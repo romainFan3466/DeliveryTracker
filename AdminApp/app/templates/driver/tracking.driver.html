@@ -1,0 +1,21 @@
+<div class="row row-full">
+
+    <div class="col-sm-10" id="map_canvas">
+
+            <ui-gmap-google-map center="map.center" zoom="map.zoom" draggable="true" >
+                <ui-gmap-markers models="markers" coords="'coords'" click="onClick" icon="'icon'" events="markers.events">
+                    <ui-gmap-windows show="show" >
+                        <div>{{customerName}}</div>
+                    </ui-gmap-windows>
+                </ui-gmap-markers>
+            </ui-gmap-google-map>
+
+    </div>
+
+    <div class="col-sm-2">
+        hello
+    </div>
+
+
+</div>
+
