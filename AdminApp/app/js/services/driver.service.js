@@ -7,9 +7,9 @@ AppModule.factory('$driver', [
             var deferred = $q.defer();
             var driver = new DriverMapper(data);
             $http
-                .post(Config.baseUrl + "/drivers/", {driver: driver})
+                .post(Config.baseUrl + "/drivers", {driver: driver})
                 .success(function (res) {
-                    deferred.resolve({driverID: res.driverId});
+                    deferred.resolve({driverID: res.driverId, password : res.password});
                 })
                 .error(function (res) {
                     deferred.reject(res);
@@ -20,7 +20,7 @@ AppModule.factory('$driver', [
 
         var _update = function (id, data) {
             var deferred = $q.defer();
-            var driver = new DriverMapper(data);
+            var driver = new DriverMapper(data, true);
             $http
                 .put(Config.baseUrl + "/drivers/" + id, {driver: driver})
                 .success(function (res) {
@@ -52,7 +52,7 @@ AppModule.factory('$driver', [
             $http
                 .get(Config.baseUrl + "/drivers/" + id)
                 .success(function (res) {
-                    driver = new DriverMapper(res.driver);
+                    driver = new DriverMapper(res.driver, true);
                     deferred.resolve({driver: driver});
                 })
                 .error(function (res) {
@@ -69,7 +69,7 @@ AppModule.factory('$driver', [
                 .success(function (res) {
                     drivers = [];
                     angular.forEach(res.drivers, function (driver) {
-                        c = new DriverMapper(res.driver);
+                        c = new DriverMapper(driver.driver, true);
                         drivers.push(c);
                     });
                     deferred.resolve({drivers: drivers});

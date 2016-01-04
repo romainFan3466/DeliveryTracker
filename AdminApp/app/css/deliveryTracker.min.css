@@ -8915,3 +8915,16 @@ input:-moz-placeholder {
   overflow: hidden;
   outline: none;
 }
+html,
+body,
+.container-fluid {
+  height: 97%;
+}
+.row-full,
+#map_canvas {
+  height: 100%;
+}
+.angular-google-map-container,
+.angular-google-map {
+  height: 100%;
+}

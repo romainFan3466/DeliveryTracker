@@ -12,7 +12,7 @@
                    id="InputCompany"
                    class="form-control"
                    placeholder="Enter the driver's name"
-                   typeahead="driver as driver.name for driver in drivers | filter:{name:$viewValue}| limitTo:8 "
+                   uib-typeahead="driver as driver.name for driver in drivers | filter:{name:$viewValue}| limitTo:8 "
                    typeahead-on-select='onSelect($item, $model, $label)'>
             <!--<spinner loading="loading"></spinner>-->
         </div>
@@ -41,23 +41,24 @@
                             <div class="col-sm-8">
                                 <input type="email" class="form-control" id="inputAddress"
                                        ng-disabled="!editor"
-                                       ng-model="driver.email">
+                                       ng-model="driver.email"
+                                       required>
                             </div>
                         </div>
                     </div>
 
                 <div class="row">
                     <div class="form-group">
-                        <label for="inputPhone" class="col-sm-3 control-label">Phone number</label>
+                        <label for="inputPhone" class="col-sm-2 control-label">Phone number</label>
 
-                        <div class="input-group col-sm-4">
-                            <div class="input-group-addon">+353</div>
+                        <div class="col-sm-4">
                             <input type="text"
                                    class="form-control"
                                    id="inputPhone"
                                    placeholder="Enter phone number"
                                    ng-model="driver.phone"
-                                   ng-disabled="!editor">
+                                   ng-disabled="!editor"
+                                   required>
                         </div>
                     </div>
                 </div>
@@ -68,7 +69,8 @@
     <div class="row row-lg-space">
         <button class="btn btn-danger col-xs-offset-5 col-xs-2 col-sm-offset-2 col-sm-2 col-space"
                 ng-click="remove(driver)"
-                ng-disabled="!found">
+                ng-disabled="!found"
+                ng-show="false">
             Delete
         </button>
         <button class="btn btn-primary col-xs-offset-5 col-xs-2 col-space col-sm-offset-1 col-sm-2"
@@ -91,7 +93,7 @@
     </div>
 
 
-    <div class="row" ng-show="edited && retrieved===''">
+    <div class="row" ng-show="success.edited && form.$invalid">
         <div class="center-block text-center">
            <span class="alert alert-success">
            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
@@ -100,14 +102,14 @@
         </div>
     </div>
 
-    <div class=" row" ng-show="deleted && retrieved===''">
+    <div class=" row" ng-show="success.deleted && form.$invalid">
         <div class="center-block text-center"><span class="alert alert-success">
             <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
             Deleted driver
         </span></div>
     </div>
 
-    <div class="row" ng-show="doublon">
+    <div class="row" ng-show="error.value">
         <div class="center-block text-center">
             <span class="alert alert-danger ">
             <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>

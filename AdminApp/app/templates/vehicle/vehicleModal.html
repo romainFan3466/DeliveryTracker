@@ -1,0 +1,25 @@
+<div class="modal-header">
+    <h3 class="modal-title">Vehicle Details</h3>
+</div>
+<div class="modal-body">
+    <ul>
+        <li><strong>ID : </strong>{{vehicle.id}}</li>
+        <li><strong>Registration : </strong>{{vehicle.registration}}</li>
+        <li><strong>Type : </strong>{{vehicle.type}}</li>
+        <li><strong>Weight limit : </strong>{{vehicle.maxWeight}}</li>
+        <li><strong>Area limit : </strong>{{vehicle.maxArea}}</li>
+    </ul>
+    <hr>
+    <ul>
+        <li><strong>Actual Weight : </strong>{{vehicle.weight}}</li>
+        <li><strong>Actual Free Area : </strong>{{vehicle.area}}</li>
+    </ul>
+    <hr>
+    <ul>
+        <li><strong>Driver : </strong> {{driver.name}}</li>
+    </ul>
+
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="close()">Close</button>
+</div>

@@ -5,21 +5,21 @@
     </div>
 
     <form role="form"
-          ng-submit=""
+          ng-submit="createDelivery()"
           name="form">
 
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
                 <label for="InputCompany">Customer's Name</label>
                 <input type="text"
-                       name="company"
-                       ng-model="retrieved.customer"
+                       ng-model="search.customer"
                        id="InputCompany"
-                       placeholder="Enter customer's name"
-                       typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue} | limitTo:8"
-                       typeahead-loading="loadingCompanies"
+                       class="form-control"
+                       placeholder="Enter the customer's name"
+                       uib-typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
                        typeahead-on-select='onSelectCustomer($item, $model, $label)'
-                       class="form-control" required>
+                       typeahead-no-results="noResults"
+                       required>
             </div>
         </div>
 
@@ -32,12 +32,13 @@
             <hr>
         </div>
 
+
         <div class="row">
 
             <div class="col-xs-offset-2 col-xs-2">
                 <div class="radio">
                     <label>
-                        <input type="radio" name="optionsRadios" id="optionsRadios1" value="customer" ng-model="pickup.choice">
+                        <input type="radio" name="optionsRadios" id="optionsRadios2" value="customer" ng-model="pickupLocation">
                         Customer
                     </label>
                 </div>
@@ -45,15 +46,17 @@
 
 
             <div class="form-group col-xs-offset-1 col-xs-6">
-                <label for="InputName">Name</label>
+                <label for="pickupCustomer">Name</label>
                 <input type="text"
-                       ng-model="delivery.name"
-                       id="InputName"
-                       name="name"
-                       placeholder="Enter the delivery's name"
+                       id="pickupCustomer"
                        class="form-control"
-                       ng-required="pickup.choice=='customer'"
-                       ng-disabled="pickup.choice!='customer'">
+                       ng-model="search.pickup"
+                       placeholder="Enter the customer's name"
+                       uib-typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
+                       typeahead-on-select='onSelectPickup($item, $model, $label)'
+                       typeahead-no-results="noResults"
+                       ng-required="pickupLocation=='customer'"
+                       ng-disabled="pickupLocation!='customer'">
             </div>
         </div>
 
@@ -62,24 +65,25 @@
             <div class="col-xs-offset-2 col-xs-2">
                 <div class="radio">
                     <label>
-                        <input type="radio" name="optionsRadios" id="optionsRadios2" ng-model="pickup.choice" value="address">
-                        Address
+                        <input type="radio" name="optionsRadios" id="optionsRadios3" ng-model="pickupLocation" value="address">
+                        Other
                     </label>
                 </div>
             </div>
 
             <div class="form-group col-xs-offset-1 col-xs-6">
                 <label for="InputAddress">Address</label>
-                <input type="text"
-                       ng-model="delivery.name"
-                       id="InputAddress"
-                       name="name"
-                       placeholder="Enter the delivery's name"
+                <input ng-model="search.addressPickup"
+                       details="details.pickup"
+                       googleplace
                        class="form-control"
-                       ng-required="pickup.choice=='address'"
-                       ng-disabled="pickup.choice!='address'">
+                       name="address"
+                       id="InputAddress"
+                       ng-required="pickupLocation=='address'"
+                       ng-disabled="pickupLocation!='address'">
             </div>
         </div>
+
 
         <div class="row row-space">
             <div class="center-block">
@@ -95,7 +99,7 @@
             <div class="col-xs-offset-2 col-xs-2">
                 <div class="radio">
                     <label>
-                        <input type="radio" name="optionsRadios2" id="optionsRadios13" ng-model="delivery.choice" value="customer">
+                        <input type="radio" name="optionsRadios2" id="optionsRadios13" ng-model="deliveryLocation" value="customer">
                         Customer
                     </label>
                 </div>
@@ -104,13 +108,15 @@
             <div class="form-group col-xs-offset-1 col-xs-6">
                 <label for="InputNameBis">Name</label>
                 <input type="text"
-                       ng-model="delivery.name"
+                       ng-model="search.delivery"
                        id="InputNameBis"
-                       name="name"
-                       placeholder="Enter the delivery's name"
                        class="form-control"
-                       ng-required="delivery.choice=='customer'"
-                       ng-disabled="delivery.choice!='customer'">
+                       placeholder="Enter the customer's name"
+                       uib-typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
+                       typeahead-on-select='onSelectDelivery($item, $model, $label)'
+                       typeahead-no-results="noResults"
+                       ng-required="deliveryLocation=='customer'"
+                       ng-disabled="deliveryLocation!='customer'">
             </div>
         </div>
 
@@ -119,33 +125,48 @@
             <div class="col-xs-offset-2 col-xs-2">
                 <div class="radio">
                     <label>
-                        <input type="radio" name="optionsRadios2" id="optionsRadios14" ng-model="delivery.choice" value="address">
-                        Address
+                        <input type="radio" name="optionsRadios2" id="optionsRadios14" ng-model="deliveryLocation" value="address">
+                        Other
                     </label>
                 </div>
             </div>
 
             <div class="form-group col-xs-offset-1 col-xs-6">
                 <label for="InputAddressBis">Address</label>
-                <input type="text"
-                       ng-model="delivery.name"
-                       id="InputAddressBis"
-                       name="name"
-                       placeholder="Enter the delivery's name"
+                <input ng-model="search.name"
                        class="form-control"
-                       ng-required="delivery.choice=='address'"
-                       ng-disabled="delivery.choice!='address'">
+                       name="address"
+                       id="InputNameBis"
+                       ng-required="deliveryLocation=='address'"
+                       ng-disabled="deliveryLocation!='address'">
+            </div>
+        </div>
+         <div class="row">
+
+
+
+            <div class="form-group col-xs-offset-5 col-xs-6">
+                <label for="InputAddressBis">Address</label>
+                <input ng-model="search.addressDelivery"
+                       details="details.delivery"
+                       googleplace
+                       class="form-control"
+                       name="address"
+                       id="InputAddressBis"
+                       ng-required="deliveryLocation=='address'"
+                       ng-disabled="deliveryLocation!='address'">
             </div>
         </div>
 
+
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
-                    <label for="InputType">Delivery Type</label>
+                    <label for="InputType">Delivery Content</label>
                     <input type="text"
-                           ng-model="customer.name"
+                           ng-model="delivery.content"
                            id="InputType"
                            name="name"
-                           placeholder="Enter the customer's name"
+                           placeholder="Enter the package content"
                            class="form-control" required>
                 </div>
 
@@ -153,24 +174,24 @@
 
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
-                    <label for="InputWeight">Weight</label>
+                    <label for="InputWeight">Weight (kg)</label>
                     <input type="text"
-                           ng-model="customer.name"
+                           ng-model="delivery.weight"
                            id="InputWeight"
                            name="name"
-                           placeholder="Enter the customer's name"
+                           placeholder="Enter the delivery weight"
                            class="form-control" required>
             </div>
         </div>
 
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
-                    <label for="InputArea">Area</label>
+                    <label for="InputArea">Area (m²)</label>
                     <input type="text"
-                           ng-model="customer.name"
+                           ng-model="delivery.area"
                            id="InputArea"
                            name="name"
-                           placeholder="Enter the customer's name"
+                           placeholder="Enter the delivery area"
                            class="form-control" required>
             </div>
         </div>
@@ -178,10 +199,10 @@
 
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
-                <label for="InputInfo">Informations (optional) </label>
+                <label for="InputInfo">Information (optional) </label>
                     <textarea type="text" rows="3" class="form-control" id="InputInfo"
-                              placeholder="Enter the full delivery's address"
-                              ng-model="delivery.address"></textarea>
+                              placeholder="Enter more information here"
+                              ng-model="delivery.info"></textarea>
             </div>
         </div>
 
@@ -190,7 +211,7 @@
             <div class="form-group center-block">
                 <div class="text-center">
                     <button type="submit" class="btn btn-success"
-                            ng-disabled="form.name.$invalid">Create
+                            ng-disabled="form.$invalid">Create
                     </button>
                 </div>
             </div>
@@ -203,7 +224,7 @@
 
     <div class="row">
         <div class="center-block text-center">
-            <span ng-show="success && form.name.$invalid" class="alert alert-success">
+            <span ng-show="success && form.$invalid" class="alert alert-success">
                 <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 Delivery created successfully
             </span>

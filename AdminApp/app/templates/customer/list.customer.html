@@ -18,7 +18,7 @@
         <div class="center-block text-center">
             <ul class="pagination">
                 <li ng-repeat="letter in alphabet"
-                    ng-class="{active : selected()===letter && inputSearch===''}">
+                    ng-class="{active : selectedLetter===letter && inputSearch===''}">
                     <a ng-click="sortArray(letter)" href=""
                         >{{letter}}</a></li>
             </ul>
@@ -32,7 +32,7 @@
                     <thead>
                     <tr>
                         <th>ID</th>
-                        <th class="table-sortable"
+                        <th class="table-sortable text-center"
                             ng-click="reverse=!reverse ;order('name', reverse)">
                             Name
                                 <span class="fa"
@@ -40,41 +40,24 @@
                                       ng-show="active.name">
                                 </span>
                         </th>
-                        <th>Address</th>
-                        <th class="table-sortable"
-                            ng-click="reverse=!reverse ;order('city', reverse)">
-                            City
-                                <span class="fa"
-                                      ng-class="{ 'fa-caret-down' :reverse , 'fa-caret-up':!reverse}"
-                                      ng-show="active.city">
-                                </span>
-                        </th>
-                        <th class="table-sortable"
-                            ng-click="reverse=!reverse ;order('country', reverse)">
-                            Country
-                                <span class="fa"
-                                      ng-class="{ 'fa-caret-down' :reverse , 'fa-caret-up':!reverse}"
-                                      ng-show="active.country">
-                                </span>
-                        </th>
+
                         <th>Phone</th>
 
-                        <th  class="text-center">Edit</th>
+                        <th class="text-center">Edit</th>
 
                     </tr>
                     </thead>
                     <tbody>
                     <tr ng-repeat="customer in customers">
-                        <td>{{customer.ID}}</td>
-                        <td>{{customer.name}}</td>
-                        <td>{{customer.address}}</td>
-                        <td>{{customer.city}}</td>
-                        <td>{{customer.country}}</td>
+                        <td>{{customer.id}}</td>
+                        <td class="text-center">{{customer.name}}</td>
                         <td>{{customer.phone}}</td>
-                        <td class="text-center"><span class=" btn btn-primary fa fa-pencil-square-o"
-                                ng-go="/customer/edit/{{customer.ID}}"></span></td>
-                        <td class="text-center"><a class=" btn btn-danger fa fa-file-pdf-o"
-                                                   target="_blank" ng-href="/php/qrCode/customers/{{customer.ID}}"></a></td>
+                        <td class="text-center">
+                            <button class="btn btn-primary" ng-click="showCustomer(customer)">
+                                <i class="fa fa-eye fa-lg"></i>
+                            </button>
+                        </td>
+
                     </tr>
                     </tbody>
                 </table>
@@ -86,7 +69,7 @@
         <div class="center-block text-center">
             <ul class="pagination">
                 <li ng-repeat="letter in alphabet"
-                    ng-class="{active : selected()===letter && inputSearch===''}">
+                    ng-class="{active : selectedLetter===letter && inputSearch===''}">
                     <a ng-click="sortArray(letter)" href=""
                             >{{letter}}</a></li>
             </ul>

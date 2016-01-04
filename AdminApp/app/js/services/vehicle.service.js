@@ -5,9 +5,10 @@ AppModule.factory('$vehicle', [
 
         var _create = function (data) {
             var deferred = $q.defer();
-            var vehicle = new VehicleMapper(data);
+            var vehicle = new VehicleMapper(data,true);
+            vehicle.queryFormat();
             $http
-                .post(Config.baseUrl + "/vehicles/", {vehicle: vehicle})
+                .post(Config.baseUrl + "/vehicles", {vehicle: vehicle})
                 .success(function (res) {
                     deferred.resolve({vehicleID: res.vehicleId});
                 })
@@ -20,7 +21,8 @@ AppModule.factory('$vehicle', [
 
         var _update = function (id, data) {
             var deferred = $q.defer();
-            var vehicle = new VehicleMapper(data);
+            var vehicle = new VehicleMapper(data, true);
+            vehicle.queryFormat();
             $http
                 .put(Config.baseUrl + "/vehicles/" + id, {vehicle: vehicle})
                 .success(function (res) {
@@ -52,7 +54,7 @@ AppModule.factory('$vehicle', [
             $http
                 .get(Config.baseUrl + "/vehicles/" + id)
                 .success(function (res) {
-                    vehicle = new VehicleMapper(res.vehicle);
+                    vehicle = new VehicleMapper(res.vehicle, true);
                     deferred.resolve({vehicle: vehicle});
                 })
                 .error(function (res) {
@@ -69,7 +71,7 @@ AppModule.factory('$vehicle', [
                 .success(function (res) {
                     vehicles = [];
                     angular.forEach(res.vehicles, function (vehicle) {
-                        c = new VehicleMapper(res.vehicle);
+                        c = new VehicleMapper(vehicle.vehicle, true);
                         vehicles.push(c);
                     });
                     deferred.resolve({vehicles: vehicles});
@@ -80,5 +82,11 @@ AppModule.factory('$vehicle', [
             return deferred.promise
         };
 
+        return {
+            create : _create,
+            update : _update,
+            get : _get,
+            getAll : _getAll
+        }
     }
 ]);

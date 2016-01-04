@@ -9,41 +9,36 @@
 
         <div class="row">
             <div class="form-group col-sm-offset-4 col-sm-4">
-                <label for="InputId">Vehicle registration</label>
-                <input type="text" class="form-control"
+                <label for="Inputreg">Vehicle registration</label>
+                <input type="text"
+                       ng-model="retrieved"
+                       id="Inputreg"
+                       class="form-control"
                        placeholder="Enter vehicle registration"
-                       id="InputId"
-                       ng-model="vehicle.registration"
+                       uib-typeahead="vehicle as vehicle.registration for vehicle in vehicles | filter:{registration:$viewValue}| limitTo:8 "
+                       typeahead-on-select='onSelect($item, $model, $label)'
+                       typeahead-no-results="noResults"
                        required>
             </div>
         </div>
 
-        <div class="row">
-            <div class="form-group center-block">
-                <div class="text-center">
-                    <button type="submit" class="btn btn-success"
-                            ng-disabled="form.name.$invalid">Search
-                    </button>
-                </div>
-            </div>
-        </div>
     </form>
 
 
-    <form role="form"
-          ng-submit="add(vehicle)"
-          name="form">
+    <form role="form" name="form">
 
         <div class="row">
             <hr>
             <div class="form-group col-md-offset-3 col-md-6">
                 <label for="InputName">Registration</label>
                 <input type="text"
-                       ng-model="vehicle.name"
+                       ng-model="vehicle.registration"
                        id="InputName"
                        name="name"
-                       placeholder="Enter the vehicle name"
-                       class="form-control" required>
+                       placeholder="Enter the vehicle registration"
+                       class="form-control"
+                       ng-disabled="!editor"
+                       required>
             </div>
         </div>
 
@@ -52,31 +47,38 @@
                 <label for="InputType">Type</label>
                 <input type="text" class="form-control" id="InputType"
                        placeholder="Enter the vehicle type"
-                       ng-model="vehicle.type">
+                       ng-model="vehicle.type"
+                       ng-disabled="!editor"
+                       required>
             </div>
         </div>
 
         <div class="row form-inline">
             <div class="form-group col-sm-offset-3 col-sm-3">
-                <label for="InputWeight">Max weight</label>
+                <label for="InputWeight">Max weight (kg)</label>
                 <input type="text" class="form-control" id="InputWeight"
-                       placeholder="Enter the vehicle type"
-                       ng-model="vehicle.type">
+                       placeholder="Enter the vehicle weight limit"
+                       ng-model="vehicle.maxWeight"
+                       ng-disabled="!editor"
+                       required>
             </div>
 
             <div class="form-group col-sm-3">
-                <label for="InputSize">Max size</label>
+                <label for="InputSize">Max Area (m²)</label>
                 <input type="text" class="form-control" id="InputSize"
-                       placeholder="Enter the vehicle type"
-                       ng-model="vehicle.type">
+                       placeholder="Enter the vehicle area limit"
+                       ng-model="vehicle.maxArea"
+                       ng-disabled="!editor"
+                       required>
             </div>
         </div>
     </form>
 
     <div class="row row-lg-space">
         <button class="btn btn-danger col-xs-offset-5 col-xs-2 col-sm-offset-2 col-sm-2 col-space"
-                ng-click="remove(delivery)"
-                ng-disabled="!found">
+                ng-click="remove(vehicle)"
+                ng-disabled="!found"
+                ng-show="false">
             Delete
         </button>
         <button class="btn btn-primary col-xs-offset-5 col-xs-2 col-space col-sm-offset-1 col-sm-2"
@@ -86,7 +88,7 @@
             Edit
         </button>
         <button class="btn btn-success col-xs-offset-5 col-xs-2 col-sm-offset-1 col-sm-2 col-space"
-                ng-click="update(delivery)"
+                ng-click="update(vehicle)"
                 ng-show="editor"
                 ng-disabled="form.$invalid">
             Update
@@ -101,20 +103,16 @@
 
     <div class="row">
         <div class="center-block text-center">
-            <span ng-show="success && form.name.$invalid" class="alert alert-success">
+            <span ng-show="success && form.$invalid" class="alert alert-success">
                 <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 Vehicle created successfully
             </span>
 
-            <span ng-show="error && !success" class="alert alert-danger">
+            <span ng-show="error.value && !success" class="alert alert-danger">
                 <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                 Vehicle not created
+                 Error : {{error.info}}
             </span>
 
-            <span ng-show="invalidName" class="alert alert-danger">
-                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                Error : {{error.info}}
-            </span>
 
             <spinner loading="loading"></spinner>
         </div>

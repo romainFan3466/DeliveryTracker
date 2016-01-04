@@ -20,7 +20,8 @@ AppModule.config(['$routeProvider', function ($routeProvider) {
         
         {url: "/drivers/create", templateUrl: "templates/driver/create.driver.html", controller : "CreateDriverController"},
         {url: "/drivers/edit", templateUrl: "templates/driver/edit.driver.html", controller : "EditDriverController"},
-        {url: "/drivers/list", templateUrl: "templates/driver/list.driver.html", controller : "ListDriverController"}
+        {url: "/drivers/list", templateUrl: "templates/driver/list.driver.html", controller : "ListDriverController"},
+        {url: "/drivers/track", templateUrl: "templates/driver/tracking.driver.html", controller : "TrackDriverController"}
 	];
 
 	$routeProvider.otherwise({redirectTo: '/home'});

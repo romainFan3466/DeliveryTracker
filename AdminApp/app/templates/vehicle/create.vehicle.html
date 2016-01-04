@@ -5,17 +5,17 @@
 
 
     <form role="form"
-          ng-submit="add(vehicle)"
+          ng-submit="createVehicle(vehicle)"
           name="form">
 
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
                 <label for="InputName">Registration</label>
                 <input type="text"
-                       ng-model="vehicle.name"
+                       ng-model="vehicle.registration"
                        id="InputName"
                        name="name"
-                       placeholder="Enter the vehicle name"
+                       placeholder="Enter the vehicle registration"
                        class="form-control" required>
             </div>
         </div>
@@ -31,35 +31,20 @@
 
         <div class="row form-inline">
             <div class="form-group col-sm-offset-3 col-sm-3">
-                <label for="InputWeight">Max weight</label>
+                <label for="InputWeight">Max weight (kg)</label>
                 <input type="text" class="form-control" id="InputWeight"
-                       placeholder="Enter the vehicle type"
-                       ng-model="vehicle.type">
+                       placeholder="Enter the maximum weight of the vehicle"
+                       ng-model="vehicle.maxWeight">
             </div>
 
             <div class="form-group col-sm-3">
-                <label for="InputSize">Max size</label>
-                <input type="text" class="form-control" id="InputSize"
-                       placeholder="Enter the vehicle type"
-                       ng-model="vehicle.type">
+                <label for="InputArea">Max area (m²)</label>
+                <input type="text" class="form-control" id="InputArea"
+                       placeholder="Enter the maximum area of the vehicle"
+                       ng-model="vehicle.maxArea">
             </div>
         </div>
 
-
-                <!--<div class="form-group">-->
-                        <!--<label for="InputCountry">Country</label>-->
-                        <!--<input type="text"-->
-                               <!--ng-model="vehicle.country"-->
-                               <!--typeahead="address.country for address in getLocation($viewValue) |  limitTo:10"-->
-                               <!--class="form-control"-->
-                               <!--placeholder="{{ 'vehicle.enter_country' | translate }}"-->
-                               <!--typeahead-on-select='onSelect($item, $model, $label)'-->
-                               <!--typeahead-loading="loadingLocations">-->
-
-                        <!--<span ng-show="loadingLocations" class="fa fa-spinner fa-spin"></span>-->
-                    <!--</div>-->
-
-        
 
         <div class="row row-space">
             <div class="form-group center-block">
@@ -82,15 +67,11 @@
                 Vehicle created successfully
             </span>
 
-            <span ng-show="error && !success" class="alert alert-danger">
+            <span ng-show="error.value && !success" class="alert alert-danger">
                 <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                 Vehicle not created
+                 Error : {{error.info}}
             </span>
 
-            <span ng-show="invalidName" class="alert alert-danger">
-                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                Error : {{error.info}}
-            </span>
 
             <spinner loading="loading"></spinner>
         </div>

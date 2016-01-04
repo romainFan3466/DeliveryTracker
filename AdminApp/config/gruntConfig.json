@@ -51,7 +51,11 @@
 	            "<%= vendorPath %>/jquery/dist/jquery.js",
                 "<%= vendorPath %>/bootstrap/dist/js/bootstrap.min.js",
                 "<%= vendorPath %>/angular-bootstrap/ui-bootstrap.min.js",
-                "<%= vendorPath %>/angular-bootstrap/ui-bootstrap-tpls.min.js"
+                "<%= vendorPath %>/angular-bootstrap/ui-bootstrap-tpls.min.js",
+                "<%= vendorPath %>/angular-simple-logger/dist/angular-simple-logger.min.js",
+                "<%= vendorPath %>/lodash/lodash.min.js",
+                "<%= vendorPath %>/angular-google-maps/dist/angular-google-maps.min.js",
+                "<%= vendorPath %>/humps/humps.js"
             ],
             "dest": "<%= buildPath %>/js/deliveryTracker-lib.min.js"
         }
