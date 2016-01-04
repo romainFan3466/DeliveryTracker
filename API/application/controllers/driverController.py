@@ -68,7 +68,7 @@ def update(id:int):
             driver_data["email"] = driver["driver"]["email"]
 
         if "phone" in driver["driver"]:
-            driver_data["phone"] = driver["driver"]["phone"],
+            driver_data["phone"] = driver["driver"]["phone"]
 
         db.update(table="users", params=driver_data, conditions={"id": id})
         return jsonify(info="Driver updated successfully"),200

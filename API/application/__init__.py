@@ -57,9 +57,10 @@ from application.controllers.vehicleController import vehicle_blueprint
 ### BLUEPRINTS LOADING ###
 app.register_blueprint(customer_blueprint)
 app.register_blueprint(authentication_blueprint)
+app.register_blueprint(vehicle_blueprint)
 app.register_blueprint(driver_blueprint)
 app.register_blueprint(delivery_blueprint)
-app.register_blueprint(vehicle_blueprint)
+
 
 
 @app.errorhandler(400)
@@ -74,5 +75,3 @@ def unauthorized(error):
 @app.errorhandler(500)
 def bad_request(error):
     return jsonify(info="Internal error"),500
-
-
