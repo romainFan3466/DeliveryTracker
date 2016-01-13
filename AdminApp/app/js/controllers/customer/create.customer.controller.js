@@ -16,13 +16,13 @@ AppModule.controller("CreateCustomerController",[
         });
 
         $scope.addCustomer = function(customer){
-            if(!angular.isDefined($scope.address) || $scope.details == null){
+            if(!angular.isDefined(customer.address) ||customer.address=="" || $scope.details == null){
                 $scope.error = true;
                 $scope.success = false;
                 $scope.errorInfo= "Missing address";
             }
             else{
-                angular.copy($scope.address, $scope.customer.address);
+                //angular.copy($scope.address, $scope.customer.address);
                 $scope.customer.location = {
                     lat : $scope.details.lat,
                     lng : $scope.details.lng

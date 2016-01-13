@@ -45,6 +45,7 @@
             "src": [
                 "<%= vendorPath %>/angular/angular.min.js",
                 "<%= vendorPath %>/angular-route/angular-route.min.js",
+                "<%= vendorPath %>/angular-sanitize/angular-sanitize.min.js",
                 "<%= vendorPath %>/angular-animate/angular-animate.min.js",
                 "<%= vendorPath %>/angular-resource/angular-resource.min.js",
                 "<%= vendorPath %>/angular-filter/dist/angular-filter.min.js",

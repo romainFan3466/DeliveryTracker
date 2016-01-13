@@ -4,90 +4,83 @@ AppModule.controller("CreateDeliveryController",[
 
         $scope.customers = [];
         $scope.customer = {};
-
-
-        $scope.details = {
-            pickup : {},
-            delivery : {}
+        $scope.error = {
+            value: false,
+            info: ""
         };
 
-        $scope.search ={
-            customer : "",
-            pickup : "",
-            delivery : "",
-            addressPickup : "",
-            addressDelivery : ""
-        };
+        $scope.success = false;
 
         var _selectedCustomerPickupLocation = {};
         var _selectedCustomerDeliveryLocation = {};
 
 
+        var _init = function () {
+            $scope.search = {
+                customer: "",
+                pickup: "",
+                delivery: ""
+            };
+            $scope.delivery = {
+                senderId : "",
+                receiverId : "",
+                dateCreated: "",
+                customerId: "",
+                info: "",
+                weight: "",
+                area: "",
+                content: ""
 
-
-        $scope.delivery ={
-            locationPickup : {
-                lat : "",
-                lng : ""
-            },
-            locationDelivery : {
-                lat : "",
-                lng : ""
-            },
-            dateCreated : "",
-            customerId : "",
-            info : "",
-            weight : "",
-            area : "",
-            content : ""
-
+            };
+            $scope.homeAddress = "";
         };
 
-        $scope.homeAddress = "";
-
-
-        $scope.pickup = {
-            choice : "customer"
-        };
-
-        $scope.delivery= {
-            choice : "customer"
-        };
 
         $scope.onSelectCustomer = function(item, model, label){
             $scope.delivery.customerId = item.id;
             angular.copy(item, $scope.customer);
         };
 
-        /*$customer.getAddress(item.location.lat, item.location.lng).then(
-            function(res){
-                $scope.homeAddress = res.address;
-            }
-        );*/
 
         $scope.createDelivery = function(){
-            _setPickup();
-            _setDelivery();
             $scope.delivery.dateCreated = new Date();
             $delivery.create($scope.delivery).then(
                 function(res){
-
+                    _init();
+                    $scope.error.value = false;
+                    $scope.success = true;
                 },
                 function(res){
-
+                    $scope.success =false;
+                    $scope.error ={
+                        value : true,
+                        info : res.info
+                    };
                 }
             );
         };
 
 
-
-
-        $scope.onSelectPickup = function(item, model, label){
-            _selectedCustomerPickupLocation = item.location;
+        $scope.onSelectSender = function(item, model, label){
+            $scope.delivery.senderId = item.id;
+            //angular.copy(item, $scope.sender);
+            $scope.sender = item;
         };
 
-        $scope.onSelectDelivery = function(item, model, label){
-            _selectedCustomerDeliveryLocation = item.location;
+        $scope.onSelectReceiver = function(item, model, label){
+            $scope.delivery.receiverId = item.id;
+            //angular.copy(item, $scope.receiver);
+            $scope.receiver = item;
+        };
+
+
+        var getCustomer = function (id) {
+            angular.forEach($scope.customers, function (c) {
+                if (c.id == id) {
+                    return c;
+                }
+            });
+            return null;
         };
 
 
@@ -100,35 +93,7 @@ AppModule.controller("CreateDeliveryController",[
             }
         );
 
-        var _setPickup = function(){
-            if($scope.pickupLocation == "address"){
-                var l = {
-                    lat : $scope.details.pickup.lat,
-                    lng : $scope.details.pickup.lng
-                };
-                $scope.delivery.locationPickup = l;
-                //angular.copy($scope.details.pickup.lng, $scope.delivery.locationPickup.lng);
-            }
-            else if ($scope.pickupLocation == "customer"){
-                $scope.delivery.locationPickup = _selectedCustomerPickupLocation;
-            }
-        };
-
-
-        var _setDelivery = function(){
-            if($scope.deliveryLocation == "address"){
-                var l = {
-                    lat : $scope.details.delivery.lat,
-                    lng : $scope.details.delivery.lng
-                };
-                $scope.delivery.locationDelivery = l;
-            }
-
-            else if ($scope.deliveryLocation == "customer"){
-                $scope.delivery.locationDelivery = _selectedCustomerDeliveryLocation;
-            }
-        };
-
+        _init();
 
     }
 

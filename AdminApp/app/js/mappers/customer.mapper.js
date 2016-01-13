@@ -33,6 +33,9 @@ AppModule.factory('CustomerMapper',
                                     lng : parseFloat(value.lng)
                                 };
                             }
+                            else if (key == "address"){
+                                self[key] = value.replace(',', /\n/g);
+                            }
                             else {
                                 self[key] = value;
                             }
@@ -49,10 +52,13 @@ AppModule.factory('CustomerMapper',
                                     lng: parseFloat(value.lng)
                                 };
                             }
-                        else
-                            {
-                                self[key] = value;
+                            else if (key == "address"){
+                                self[key] = value.replace(',', '<br>');
                             }
+                            else
+                                {
+                                    self[key] = value;
+                                }
                         }
                     });
                 }

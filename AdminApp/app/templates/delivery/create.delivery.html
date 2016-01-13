@@ -1,4 +1,3 @@
-
 <div class="container-fluid ng-cloak" ng-cloak>
     <div class="row">
         <h1 class="text-center">Create Delivery</h1>
@@ -7,6 +6,7 @@
     <form role="form"
           ng-submit="createDelivery()"
           name="form">
+
 
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
@@ -23,176 +23,110 @@
             </div>
         </div>
 
+        <hr>
+
+        <div class="row">
+            <div class="col-md-offset-1 col-md-5">
+                <div class="panel panel-info">
+                    <div class="panel-heading text-center"><h4>Sender</h4></div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label for="pickupCustomer">Customer's Name</label>
+                                <input type="text"
+                                       id="pickupCustomer"
+                                       class="form-control"
+                                       ng-model="search.pickup"
+                                       placeholder="Enter the customer's name"
+                                       uib-typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
+                                       typeahead-on-select='onSelectSender($item, $model, $label)'
+                                       typeahead-no-results="noResults"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="row row-space">
+                            <div class="col-xs-10">
+                                <strong>{{sender.name}}</strong><br>
+                                <span ng-bind-html="sender.address"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="panel panel-info">
+                    <div class="panel-heading text-center"><h4>Receiver</h4></div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <label for="InputNameBis">Customer's Name</label>
+                                <input type="text"
+                                       ng-model="search.delivery"
+                                       id="InputNameBis"
+                                       class="form-control"
+                                       placeholder="Enter the customer's name"
+                                       uib-typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
+                                       typeahead-on-select='onSelectReceiver($item, $model, $label)'
+                                       typeahead-no-results="noResults"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="row row-space">
+                            <div class="col-xs-10">
+                                <strong>{{receiver.name}}</strong><br>
+                                <span ng-bind-html="receiver.address"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <div class="row row-space">
             <div class="center-block">
                 <div class="text-center">
-                    <h3>Pick up</h3>
+                    <h3>Details</h3>
                 </div>
             </div>
             <hr>
         </div>
 
-
         <div class="row">
-
-            <div class="col-xs-offset-2 col-xs-2">
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="optionsRadios" id="optionsRadios2" value="customer" ng-model="pickupLocation">
-                        Customer
-                    </label>
-                </div>
-            </div>
-
-
-            <div class="form-group col-xs-offset-1 col-xs-6">
-                <label for="pickupCustomer">Name</label>
+            <div class="form-group col-md-offset-3 col-md-6">
+                <label for="InputType">Delivery Content</label>
                 <input type="text"
-                       id="pickupCustomer"
-                       class="form-control"
-                       ng-model="search.pickup"
-                       placeholder="Enter the customer's name"
-                       uib-typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
-                       typeahead-on-select='onSelectPickup($item, $model, $label)'
-                       typeahead-no-results="noResults"
-                       ng-required="pickupLocation=='customer'"
-                       ng-disabled="pickupLocation!='customer'">
+                       ng-model="delivery.content"
+                       id="InputType"
+                       name="name"
+                       placeholder="Enter the package content"
+                       class="form-control" required>
             </div>
+
         </div>
 
         <div class="row">
-
-            <div class="col-xs-offset-2 col-xs-2">
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="optionsRadios" id="optionsRadios3" ng-model="pickupLocation" value="address">
-                        Other
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group col-xs-offset-1 col-xs-6">
-                <label for="InputAddress">Address</label>
-                <input ng-model="search.addressPickup"
-                       details="details.pickup"
-                       googleplace
-                       class="form-control"
-                       name="address"
-                       id="InputAddress"
-                       ng-required="pickupLocation=='address'"
-                       ng-disabled="pickupLocation!='address'">
-            </div>
-        </div>
-
-
-        <div class="row row-space">
-            <div class="center-block">
-                <div class="text-center">
-                    <h3>Delivery</h3>
-                </div>
-            </div>
-            <hr>
-        </div>
-
-        <div class="row">
-
-            <div class="col-xs-offset-2 col-xs-2">
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="optionsRadios2" id="optionsRadios13" ng-model="deliveryLocation" value="customer">
-                        Customer
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group col-xs-offset-1 col-xs-6">
-                <label for="InputNameBis">Name</label>
+            <div class="form-group col-md-offset-3 col-md-6">
+                <label for="InputWeight">Weight (kg)</label>
                 <input type="text"
-                       ng-model="search.delivery"
-                       id="InputNameBis"
-                       class="form-control"
-                       placeholder="Enter the customer's name"
-                       uib-typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
-                       typeahead-on-select='onSelectDelivery($item, $model, $label)'
-                       typeahead-no-results="noResults"
-                       ng-required="deliveryLocation=='customer'"
-                       ng-disabled="deliveryLocation!='customer'">
-            </div>
-        </div>
-
-        <div class="row">
-
-            <div class="col-xs-offset-2 col-xs-2">
-                <div class="radio">
-                    <label>
-                        <input type="radio" name="optionsRadios2" id="optionsRadios14" ng-model="deliveryLocation" value="address">
-                        Other
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group col-xs-offset-1 col-xs-6">
-                <label for="InputAddressBis">Address</label>
-                <input ng-model="search.name"
-                       class="form-control"
-                       name="address"
-                       id="InputNameBis"
-                       ng-required="deliveryLocation=='address'"
-                       ng-disabled="deliveryLocation!='address'">
-            </div>
-        </div>
-         <div class="row">
-
-
-
-            <div class="form-group col-xs-offset-5 col-xs-6">
-                <label for="InputAddressBis">Address</label>
-                <input ng-model="search.addressDelivery"
-                       details="details.delivery"
-                       googleplace
-                       class="form-control"
-                       name="address"
-                       id="InputAddressBis"
-                       ng-required="deliveryLocation=='address'"
-                       ng-disabled="deliveryLocation!='address'">
-            </div>
-        </div>
-
-
-        <div class="row">
-            <div class="form-group col-md-offset-3 col-md-6">
-                    <label for="InputType">Delivery Content</label>
-                    <input type="text"
-                           ng-model="delivery.content"
-                           id="InputType"
-                           name="name"
-                           placeholder="Enter the package content"
-                           class="form-control" required>
-                </div>
-
-        </div>
-
-        <div class="row">
-            <div class="form-group col-md-offset-3 col-md-6">
-                    <label for="InputWeight">Weight (kg)</label>
-                    <input type="text"
-                           ng-model="delivery.weight"
-                           id="InputWeight"
-                           name="name"
-                           placeholder="Enter the delivery weight"
-                           class="form-control" required>
+                       ng-model="delivery.weight"
+                       id="InputWeight"
+                       name="name"
+                       placeholder="Enter the delivery weight XXXXX.XX"
+                       class="form-control" required>
             </div>
         </div>
 
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
-                    <label for="InputArea">Area (m²)</label>
-                    <input type="text"
-                           ng-model="delivery.area"
-                           id="InputArea"
-                           name="name"
-                           placeholder="Enter the delivery area"
-                           class="form-control" required>
+                <label for="InputArea">Area (m²)</label>
+                <input type="text"
+                       ng-model="delivery.area"
+                       id="InputArea"
+                       name="name"
+                       placeholder="Enter the delivery area XX.XX"
+                       class="form-control" required>
             </div>
         </div>
 
@@ -218,28 +152,20 @@
         </div>
 
     </form>
-</div>
 
 
-
-    <div class="row">
+    <div class="row row-space">
         <div class="center-block text-center">
             <span ng-show="success && form.$invalid" class="alert alert-success">
                 <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 Delivery created successfully
             </span>
 
-            <span ng-show="error && !success" class="alert alert-danger">
+            <span ng-show="error.value && !success" class="alert alert-danger">
                 <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                Delivery not created
+                Error : {{error.info}}
             </span>
-
-            <span ng-show="invalidName" class="alert alert-danger">
-                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                error : {{error.info}}
-            </span>
-
-            <!--<spinner loading="loading"></spinner>-->
         </div>
     </div>
 
+</div>

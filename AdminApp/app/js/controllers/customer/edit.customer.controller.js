@@ -24,27 +24,12 @@ AppModule.controller("EditCustomerController",[
         $scope.onSelect = function(item, model, label){
             $scope.updated = false;
             $scope.customer = item;
-            if(item.location && item.location.lat && item.location.lng){
-                getAddress(item);
-            }
-            else{
-                angular.copy($scope.customer, customerTemp);
-                angular.copy($scope.customer.location, $scope.details);
-                $scope.found = true;
-            }
+            angular.copy($scope.customer, customerTemp);
+            angular.copy($scope.customer.location, $scope.details);
+            $scope.found = true;
+
         };
 
-        var getAddress = function(item){
-            $customer.getAddress(item.location.lat,item.location.lng).then(
-                function(res){
-                    $scope.address = res.address;
-                    addressTemp = res.address;
-                    angular.copy($scope.customer, customerTemp);
-                    angular.copy($scope.customer.location, $scope.details);
-                    $scope.found = true;
-                }
-            );
-        };
 
         $scope.resetChange = function(){
             angular.copy(customerTemp, $scope.customer);
@@ -52,7 +37,7 @@ AppModule.controller("EditCustomerController",[
 
 
         $scope.update = function (customer) {
-            if (!angular.isDefined($scope.address)|| ($scope.address!= addressTemp && $scope.details==null)) {
+            if (!angular.isDefined(customer.address)|| ($scope.customer!= customerTemp.address && $scope.details==null)) {
                 $scope.error = true;
                 $scope.success = false;
                 $scope.errorInfo = "Missing address";
@@ -78,7 +63,7 @@ AppModule.controller("EditCustomerController",[
 
         };
 
-        $scope.$watch("address", function(address){
+        $scope.$watch("customer.address", function(address){
            if(!angular.isDefined(address)){
                $scope.details = null;
            }
@@ -93,7 +78,6 @@ AppModule.controller("EditCustomerController",[
                         $scope.found = false;
                         customerTemp = {};
                         $scope.updated = true;
-                        $scope.address = "";
                         $scope.retrieved = "";
                         getAllCustomers();
                         $scope.editor = false;

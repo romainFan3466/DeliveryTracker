@@ -2,6 +2,7 @@
 var AppModule = angular.module('DeliveryTrackerAdmin.app', [
     'ngRoute' ,
     'ngResource',
+    'ngSanitize',
     'angular.filter',
     'ui.bootstrap',
     'uiGmapgoogle-maps']);
