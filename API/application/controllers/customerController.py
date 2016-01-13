@@ -14,6 +14,7 @@ def create():
     if (
         "customer" in customer_data and
         "name" in customer_data["customer"] and
+        "address" in customer_data["customer"] and
         "location" in customer_data["customer"] and
         "lat" in customer_data["customer"]["location"] and
         "lng" in customer_data["customer"]["location"] and
@@ -31,6 +32,7 @@ def create():
         # record customer
         data = {
             "name" : customer_data["customer"]["name"],
+            "address" : customer_data["customer"]["address"],
             "location_lat" : customer_data["customer"]["location"]["lat"],
             "location_lng" : customer_data["customer"]["location"]["lng"],
             "phone" : customer_data["customer"]["phone"],
@@ -62,6 +64,10 @@ def update(id:int):
                 return jsonify(info="Customer with the same name already exists"),400
 
             customer["name"] = customer_data["customer"]["name"]
+
+        #address
+        if "address" in customer_data["customer"]:
+            customer["address"] = customer_data["customer"]["address"]
 
         #location
         if ("location" in customer_data["customer"] and
@@ -108,12 +114,14 @@ def get(id:int):
         "id": customer_raw["id"],
         "name" : customer_raw["name"],
         "phone" : customer_raw["phone"],
+        "address" : customer_raw["address"],
         "location": {
             "lat": customer_raw["location_lat"],
             "lng": customer_raw["location_lng"],
         }
     }
     return jsonify(customer=customer),200
+
 
 
 @customer_blueprint.route("/api/customers/all", methods=['GET'])
@@ -131,6 +139,7 @@ def getAll():
                 "id": customer["id"],
                 "name": customer["name"],
                 "phone": customer["phone"],
+                "address" : customer["address"],
                 "location": {
                     "lat": customer["location_lat"],
                     "lng": customer["location_lng"],

@@ -1,6 +1,5 @@
 from flask import abort, Blueprint, request, jsonify, session
 from application import db
-from application.classes.Location import Location
 
 import application.decorators.sessionDecorator as sessionDecorator
 import datetime
@@ -14,31 +13,48 @@ def create():
     delivery = request.get_json(force=True)
     if (
         "delivery" in delivery and
-        "location_delivery" in delivery["delivery"] and
-        "location_pickup" in delivery["delivery"] and
         "customer_id" in delivery["delivery"] and
-        "date_created" in delivery["delivery"]and
-        "lat" in delivery["delivery"]["location_delivery"] and
-        "lng" in delivery["delivery"]["location_delivery"] and
-        "lat" in delivery["delivery"]["location_pickup"] and
-        "lng" in delivery["delivery"]["location_pickup"] and
-        Location.isValid(delivery["delivery"]["location_delivery"]["lat"], delivery["delivery"]["location_delivery"]["lng"]) and
-        Location.isValid(delivery["delivery"]["location_pickup"]["lat"], delivery["delivery"]["location_pickup"]["lng"])
+        "date_created" in delivery["delivery"] and
+        "weight" in delivery["delivery"] and
+        "area" in delivery["delivery"] and
+        "content" in delivery["delivery"] and
+        "sender_id" in delivery["delivery"] and
+        "receiver_id" in delivery["delivery"]
     ):
 
         # check existing customer
         if not db.is_existing(table="customers", conditions={"id": delivery["delivery"]["customer_id"]}) :
             return jsonify(info="Customer not found"),404
 
+        # check existing customer
+        if not db.is_existing(table="customers", conditions={"id": delivery["delivery"]["sender_id"]}) :
+            return jsonify(info="Sender not found"),404
+
+        # check existing customer
+        if not db.is_existing(table="customers", conditions={"id": delivery["delivery"]["receiver_id"]}) :
+            return jsonify(info="Receiver not found"),404
+
 
         formatted_delivery ={
-            "location_delivery_lat" : delivery["delivery"]["location_delivery"]["lat"],
-            "location_delivery_lng" : delivery["delivery"]["location_delivery"]["lng"],
-            "location_pickup_lat" : delivery["delivery"]["location_pickup"]["lat"],
-            "location_pickup_lng" : delivery["delivery"]["location_pickup"]["lng"],
             "customer_id" : delivery["delivery"]["customer_id"],
-            "company_id" : session["user"]["company_id"]
+            "sender_id" : delivery["delivery"]["sender_id"],
+            "receiver_id" : delivery["delivery"]["receiver_id"],
+            "company_id" : session["user"]["company_id"],
+            "content" : delivery["delivery"]["content"],
         }
+
+        weight = delivery["delivery"]["weight"]
+        area = delivery["delivery"]["area"]
+
+        if (isinstance(area, float) or isinstance(area, int)) and area < 50 and area > 0:
+            formatted_delivery["area"] = area
+        else:
+            abort(400)
+
+        if (isinstance(weight, float) or isinstance(weight, int)) and weight < 36000 and weight > 0:
+            formatted_delivery["weight"] = weight
+        else:
+            abort(400)
 
         try:
             formatted_delivery["date_created"] = datetime.datetime.strptime(delivery["delivery"]["date_created"],"%Y-%m-%d %H:%M:%S")
@@ -50,6 +66,9 @@ def create():
                 formatted_delivery["date_delivery"] = datetime.datetime.strptime(delivery["delivery"]["date_delivery"],"%Y-%m-%d %H:%M:%S")
         except ValueError:
             abort(400)
+            
+        if "info" in delivery["delivery"]:
+            formatted_delivery["info"] = delivery["delivery"]["info"]
 
         delivery_id = db.insert(table="deliveries", params=formatted_delivery)
 
@@ -73,36 +92,49 @@ def update(id:int):
             "company_id" : session["user"]["company_id"]
         }
 
+        #content
+        if "content" in delivery["delivery"]:
+            formatted_delivery["content"] = delivery["delivery"]["content"]
+            
+        #info
+        if "info" in delivery["delivery"]:
+            formatted_delivery["info"] = delivery["delivery"]["info"]
+            
+        # area
+        if "area" in delivery["delivery"]:
+            area = delivery["delivery"]["area"]
+            if (isinstance(area, float) or isinstance(area, int)) and area < 50 and area > 0:
+                formatted_delivery["area"] = area
+            else:
+                abort(400)
+
+        #weight
+        if "weight" in delivery["delivery"]:
+            weight = delivery["delivery"]["weight"]
+            if (isinstance(weight, float) or isinstance(weight, int)) and weight < 36000 and weight > 0:
+                formatted_delivery["weight"] = weight
+            else:
+                abort(400)
+        
         #customer_id
         if "customer_id" in delivery["delivery"]:
             if not db.is_existing(table="customers", conditions={"id": delivery["delivery"]["customer_id"]}):
                 return jsonify(info="Customer not found"), 404
             formatted_delivery["customer_id"] = delivery["delivery"]["customer_id"]
 
-        #location pickup
-        if "location_pickup" in delivery["delivery"]:
-            if (
-                "lat" in delivery["delivery"]["location_pickup"] and
-                "lng" in delivery["delivery"]["location_pickup"] and
-                Location.isValid(delivery["delivery"]["location_pickup"]["lat"], delivery["delivery"]["location_pickup"]["lng"])
-            ):
-                formatted_delivery["location_pickup_lat"]= delivery["delivery"]["location_pickup"]["lat"]
-                formatted_delivery["location_pickup_lng"]= delivery["delivery"]["location_pickup"]["lng"]
-            else:
-                abort(400)
+         #sender_id
+        if "sender_id" in delivery["delivery"]:
+            if not db.is_existing(table="customers", conditions={"id": delivery["delivery"]["sender_id"]}):
+                return jsonify(info="Sender not found"), 404
+            formatted_delivery["sender_id"] = delivery["delivery"]["sender_id"]
 
-        #location delivery
-        if "location_delivery" in delivery["delivery"]:
-            if (
-                "lat" in delivery["delivery"]["location_delivery"] and
-                "lng" in delivery["delivery"]["location_delivery"] and
-                Location.isValid(delivery["delivery"]["location_delivery"]["lat"], delivery["delivery"]["location_delivery"]["lng"])
-            ):
-                formatted_delivery["location_delivery_lat"] = delivery["delivery"]["location_delivery"]["lat"]
-                formatted_delivery["location_delivery_lng"] = delivery["delivery"]["location_delivery"]["lng"]
-            else:
-                abort(400)
+         #receiver_id
+        if "receiver_id" in delivery["delivery"]:
+            if not db.is_existing(table="customers", conditions={"id": delivery["delivery"]["receiver_id"]}):
+                return jsonify(info="Receiver not found"), 404
+            formatted_delivery["receiver_id"] = delivery["delivery"]["receiver_id"]
 
+        #date
         try:
             if "date_pickup" in delivery["delivery"]:
                 formatted_delivery["date_pickup"] = datetime.datetime.strptime(delivery["delivery"]["date_pickup"],
@@ -144,18 +176,16 @@ def get(id:int):
     d = {
         "id": delivery["id"],
         "customer_id": delivery["customer_id"],
+        "sender_id": delivery["sender_id"],
+        "receiver_id": delivery["receiver_id"],
+        "weight": delivery["weight"],
+        "area": delivery["area"],
+        "content": delivery["content"],
+        "info": delivery["info"],
         "driver_id": delivery["driver_id"],
         "date_pickup": delivery["date_pickup"],
         "date_delivery": delivery["date_delivery"],
         "date_created": delivery["date_created"],
-        "location_pickup": {
-            "lat": delivery["location_pickup_lat"],
-            "lng": delivery["location_pickup_lng"]
-        },
-        "location_delivery": {
-            "lat": delivery["location_delivery_lat"],
-            "lng": delivery["location_delivery_lng"]
-        }
     }
     return jsonify(delivery=d), 200
 
@@ -176,19 +206,17 @@ def getAll():
         d = {
             "delivery" : {
                 "id" : delivery["id"],
-                "customer_id" : delivery["customer_id"],
+                "customer_id": delivery["customer_id"],
+                "sender_id": delivery["sender_id"],
+                "receiver_id": delivery["receiver_id"],
+                "weight": delivery["weight"],
+                "area": delivery["area"],
+                "content": delivery["content"],
+                "info": delivery["info"],
                 "driver_id" : delivery["driver_id"],
                 "date_pickup" : delivery["date_pickup"],
                 "date_delivery" : delivery["date_delivery"],
                 "date_created" : delivery["date_created"],
-                "location_pickup" : {
-                    "lat" : delivery["location_pickup_lat"],
-                    "lng" : delivery["location_pickup_lng"]
-                },
-                "location_delivery" : {
-                    "lat" : delivery["location_delivery_lat"],
-                    "lng" : delivery["location_delivery_lng"]
-                }
             }
         }
         deliveries.append(d)
