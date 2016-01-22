@@ -100,7 +100,8 @@ AppModule.factory('$driver', [
             create: _create,
             update: _update,
             get: _get,
-            getAll: _getAll
+            getAll: _getAll,
+            assignDelivery : _assignDelivery
         }
 
     }
