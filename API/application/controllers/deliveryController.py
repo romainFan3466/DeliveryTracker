@@ -15,6 +15,7 @@ def create():
         "delivery" in delivery and
         "customer_id" in delivery["delivery"] and
         "date_created" in delivery["delivery"] and
+        "date_due" in delivery["delivery"] and
         "weight" in delivery["delivery"] and
         "area" in delivery["delivery"] and
         "content" in delivery["delivery"] and
@@ -58,6 +59,7 @@ def create():
 
         try:
             formatted_delivery["date_created"] = datetime.datetime.strptime(delivery["delivery"]["date_created"],"%Y-%m-%d %H:%M:%S")
+            formatted_delivery["date_due"] = datetime.datetime.strptime(delivery["delivery"]["date_due"],"%Y-%m-%d %H:%M:%S")
 
             if "date_pickup" in delivery["delivery"]:
                 formatted_delivery["date_pickup"] = datetime.datetime.strptime(delivery["delivery"]["date_pickup"],"%Y-%m-%d %H:%M:%S")
@@ -136,6 +138,10 @@ def update(id:int):
 
         #date
         try:
+            if "date_due" in delivery["delivery"]:
+                formatted_delivery["date_due"] = datetime.datetime.strptime(delivery["delivery"]["date_due"],
+                                                                               "%Y-%m-%d %H:%M:%S")
+                
             if "date_pickup" in delivery["delivery"]:
                 formatted_delivery["date_pickup"] = datetime.datetime.strptime(delivery["delivery"]["date_pickup"],
                                                                                "%Y-%m-%d %H:%M:%S")
@@ -183,19 +189,55 @@ def get(id:int):
         "content": delivery["content"],
         "info": delivery["info"],
         "driver_id": delivery["driver_id"],
-        "date_pickup": delivery["date_pickup"],
-        "date_delivery": delivery["date_delivery"],
-        "date_created": delivery["date_created"],
+        "date_pickup": delivery["date_pickup"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
+                                                                                    "date_pickup"] is not None else None,
+        "date_delivery": delivery["date_delivery"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
+                                                                                        "date_delivery"] is not None else None,
+        "date_created": delivery["date_created"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
+                                                                                      "date_created"] is not None else None,
+        "date_due": delivery["date_due"].strftime("%Y-%m-%d %H:%M:%S") if delivery["date_due"] is not None else None,
     }
     return jsonify(delivery=d), 200
 
 
 
-@delivery_blueprint.route("/api/deliveries/all", methods=['GET'])
+@delivery_blueprint.route("/api/deliveries/all", methods=['POST'])
 @sessionDecorator.required_user("admin")
 def getAll():
 
-    deliveries_raw=db.select(table="deliveries", conditions={"company_id" : session["user"]["company_id"]})
+    r = request.get_json(force=True)
+
+    cond = ""
+
+    if "conditions" in r :
+        if "start" in r["conditions"] and "end" in r["conditions"]:
+            try:
+                start = datetime.datetime.strptime(r["conditions"]["start"], "%Y-%m-%d %H:%M:%S")
+                end = datetime.datetime.strptime(r["conditions"]["end"], "%Y-%m-%d %H:%M:%S")
+                cond = "(deliveries.date_due BETWEEN '" + start.strftime("%Y-%m-%d %H:%M:%S") +\
+                       "' AND '" + end.strftime("%Y-%m-%d %H:%M:%S") + "') "
+            except ValueError:
+                cond = ""
+
+        if "customer_id" in r["conditions"]:
+            if cond != "":
+                cond += " AND "
+            cond+= "deliveries.customer_id = " + str(r["conditions"]["customer_id"])
+
+    if cond != "":
+        cond += " AND "
+    cond+= "deliveries.company_id="+ str(session["user"]["company_id"]) + " "
+
+    # columns= " AND ".join(key + "= %(" + key +")s" for key, value in cond.items()) if cond is not None else "1"
+
+    query = """
+      SELECT deliveries.* , customers.name AS customer_name
+      FROM deliveries""" +"""
+      INNER JOIN customers
+      ON deliveries.customer_id=customers.id """+ """
+      WHERE """+ cond + " ;"
+
+    deliveries_raw=db.query(query)
 
     if len(deliveries_raw) <1:
         return jsonify(deliveries=[]), 200
@@ -207,6 +249,7 @@ def getAll():
             "delivery" : {
                 "id" : delivery["id"],
                 "customer_id": delivery["customer_id"],
+                "customer_name" :  delivery["customer_name"],
                 "sender_id": delivery["sender_id"],
                 "receiver_id": delivery["receiver_id"],
                 "weight": delivery["weight"],
@@ -214,9 +257,10 @@ def getAll():
                 "content": delivery["content"],
                 "info": delivery["info"],
                 "driver_id" : delivery["driver_id"],
-                "date_pickup" : delivery["date_pickup"],
-                "date_delivery" : delivery["date_delivery"],
-                "date_created" : delivery["date_created"],
+                "date_pickup" : delivery["date_pickup"].strftime("%Y-%m-%d %H:%M:%S") if delivery["date_pickup"] is not None else None ,
+                "date_delivery" : delivery["date_delivery"].strftime("%Y-%m-%d %H:%M:%S")if delivery["date_delivery"] is not None else None ,
+                "date_created" : delivery["date_created"].strftime("%Y-%m-%d %H:%M:%S")if delivery["date_created"] is not None else None ,
+                "date_due": delivery["date_due"].strftime("%Y-%m-%d %H:%M:%S")if delivery["date_due"] is not None else None ,
             }
         }
         deliveries.append(d)
