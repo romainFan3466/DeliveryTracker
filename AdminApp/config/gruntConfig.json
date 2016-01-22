@@ -56,7 +56,9 @@
                 "<%= vendorPath %>/angular-simple-logger/dist/angular-simple-logger.min.js",
                 "<%= vendorPath %>/lodash/lodash.min.js",
                 "<%= vendorPath %>/angular-google-maps/dist/angular-google-maps.min.js",
-                "<%= vendorPath %>/humps/humps.js"
+                "<%= vendorPath %>/humps/humps.js",
+                "<%= vendorPath %>/moment/min/moment-with-locales.min.js",
+                "<%= vendorPath %>/angular-bootstrap-calendar/dist/js/angular-bootstrap-calendar-tpls.js"
             ],
             "dest": "<%= buildPath %>/js/deliveryTracker-lib.min.js"
         }

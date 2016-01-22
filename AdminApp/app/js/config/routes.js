@@ -8,6 +8,7 @@ AppModule.config(['$routeProvider', function ($routeProvider) {
         {url: "/customers/create", templateUrl: "templates/customer/create.customer.html", controller : "CreateCustomerController"},
         {url: "/customers/edit", templateUrl: "templates/customer/edit.customer.html", controller : "EditCustomerController"},
         {url: "/customers/list", templateUrl: "templates/customer/list.customer.html", controller : "ListCustomerController"},
+        {url: "/customer/map", templateUrl: "templates/customer/tracking.customer.html", controller : "TrackCustomerController"},
         
         {url: "/vehicles/create", templateUrl: "templates/vehicle/create.vehicle.html", controller : "CreateVehicleController"},
         {url: "/vehicles/edit", templateUrl: "templates/vehicle/edit.vehicle.html", controller : "EditVehicleController"},
@@ -15,7 +16,9 @@ AppModule.config(['$routeProvider', function ($routeProvider) {
 
         {url: "/deliveries/create", templateUrl: "templates/delivery/create.delivery.html", controller : "CreateDeliveryController"},
         {url: "/deliveries/edit", templateUrl: "templates/delivery/edit.delivery.html", controller : "EditDeliveryController"},
+        {url: "/deliveries/edit/:deliveryId", templateUrl: "templates/delivery/edit.delivery.html", controller : "EditDeliveryController"},
         {url: "/deliveries/list", templateUrl: "templates/delivery/list.delivery.html", controller : "ListDeliveryController"},
+        {url: "/deliveries/listV2", templateUrl: "templates/delivery/list.bis.delivery.html", controller : "V2ListDeliveryController"},
         {url: "/deliveries/assign", templateUrl: "templates/delivery/assign.delivery.html", controller : "AssignDeliveryController"},
         
         {url: "/drivers/create", templateUrl: "templates/driver/create.driver.html", controller : "CreateDriverController"},
@@ -38,3 +41,4 @@ AppModule.config(['$routeProvider', function ($routeProvider) {
 	});
 
 }]);
+

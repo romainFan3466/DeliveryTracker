@@ -28,7 +28,8 @@
     "install": "~1.0.4",
     "angular-google-maps": "~2.2.1",
     "humps": "~1.0.0",
-    "angular-sanitize": "~1.4.8"
+    "angular-sanitize": "~1.4.8",
+    "angular-bootstrap-calendar": "~0.18.2"
   },
   "devDependencies": {},
   "license": "GNU-3.0",
