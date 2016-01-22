@@ -63,17 +63,18 @@ AppModule.factory('$delivery',[
         };
 
 
-        var _getAll = function () {
+        var _getAll = function (conditions) {
             var deferred = $q.defer();
             $http
-                .get(Config.baseUrl + "/deliveries/all")
+                .post(Config.baseUrl + "/deliveries/all", {conditions : conditions})
                 .success(function (res) {
-                    deliverys = [];
-                    angular.forEach(res.deliverys, function(delivery){
-                        c = new DeliveryMapper(res.delivery);
-                        deliverys.push(c);
+                    deliveries = [];
+                    angular.forEach(res.deliveries, function(delivery){
+                        c = humps.camelizeKeys(delivery.delivery);
+                        c = new DeliveryMapper(c);
+                        deliveries.push(c);
                     });
-                    deferred.resolve({deliverys: deliverys});
+                    deferred.resolve({deliveries: deliveries});
                 })
                 .error(function (res) {
                     deferred.reject(res);

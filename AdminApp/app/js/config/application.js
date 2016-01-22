@@ -5,6 +5,7 @@ var AppModule = angular.module('DeliveryTrackerAdmin.app', [
     'ngSanitize',
     'angular.filter',
     'ui.bootstrap',
+    'mwl.calendar',
     'uiGmapgoogle-maps']);
 
 AppModule.config(['$httpProvider', function($httpProvider) {

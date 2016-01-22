@@ -1,0 +1,65 @@
+<div class="ng-cloak container-fluid" ng-cloak>
+    <div class="row">
+        <h1 class="text-center">List deliveries V2</h1>
+    </div>
+
+    <div class="row row-space">
+        <div class="col-md-4 text-center">
+            <div class="btn-group">
+
+                <button
+                        class="btn btn-primary"
+                        mwl-date-modifier
+                        date="view.viewDate"
+                        decrement="view.calendarView">
+                    Previous
+                </button>
+                <button
+                        class="btn btn-default"
+                        mwl-date-modifier
+                        date="view.viewDate"
+                        set-to-today>
+                    Today
+                </button>
+                <button
+                        class="btn btn-primary"
+                        mwl-date-modifier
+                        date="view.viewDate"
+                        increment="view.calendarView">
+                    Next
+                </button>
+            </div>
+        </div>
+
+        <div class="col-md-3 text-center">
+            <h2>{{vm.calendarTitle}}</h2>
+        </div>
+        <br class="visible-xs visible-sm">
+
+        <div class="col-md-4 text-center">
+            <div class="btn-group">
+                <label class="btn btn-primary" ng-model="view.calendarView" uib-btn-radio="'year'">Year</label>
+                <label class="btn btn-primary" ng-model="view.calendarView" uib-btn-radio="'month'">Month</label>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="row">
+        <div class="col-xs-12">
+
+            <mwl-calendar
+                    events="vm.events"
+                    view="view.calendarView"
+                    view-title="vm.calendarTitle"
+                    view-date="view.viewDate"
+                    on-event-click="vm.eventClicked(calendarEvent)"
+                    on-view-change-click="vm.viewChangeClicked(calendarNextView)"
+                    cell-is-open="vm.isCellOpen">
+            </mwl-calendar>
+        </div>
+
+    </div>
+</div>
+

@@ -5,9 +5,12 @@ AppModule.factory('DeliveryMapper', [
         var args = [
             "id",
             "customerId",
+            "customerName",
             "senderId",
+            "driverId",
             "receiverId",
             "dateCreated",
+            "dateDue",
             "weight",
             "area",
             "info",
@@ -36,11 +39,16 @@ AppModule.factory('DeliveryMapper', [
                     var _key = humps.camelize(key);
 
                     if (args.indexOf(_key) != -1) {
-                        if(_key == "dateCreated"){
+                        if(_key == "dateCreated" || _key == "dateDue"){
                             self[_key] = $filter('date')(value, "yyyy-MM-dd HH:mm:ss");
                         }
-                        else if(_key == "area" || _key == "weight"){
-                            self[_key] = parseFloat(value);
+                        else if(_key == "area" || _key == "weight" ){
+                            if(value !=null){
+                                self[_key] = parseFloat(value);
+                            }
+                            else {
+                                self[_key] = null;
+                            }
                         }
                         else {
                             self[_key] = value;

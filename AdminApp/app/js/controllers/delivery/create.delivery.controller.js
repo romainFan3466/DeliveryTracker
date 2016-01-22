@@ -9,6 +9,8 @@ AppModule.controller("CreateDeliveryController",[
             info: ""
         };
 
+        $scope.opened =false;
+
         $scope.success = false;
 
         var _selectedCustomerPickupLocation = {};
@@ -21,10 +23,14 @@ AppModule.controller("CreateDeliveryController",[
                 pickup: "",
                 delivery: ""
             };
+
+            $scope.now = new Date();
+
             $scope.delivery = {
                 senderId : "",
                 receiverId : "",
                 dateCreated: "",
+                dateDue : "",
                 customerId: "",
                 info: "",
                 weight: "",
@@ -60,6 +66,11 @@ AppModule.controller("CreateDeliveryController",[
             );
         };
 
+        $scope.open = function ($event) {
+            $event.preventDefault();
+            $event.stopPropagation();
+            $scope.opened = !$scope.opened;
+        };
 
         $scope.onSelectSender = function(item, model, label){
             $scope.delivery.senderId = item.id;

@@ -1,4 +1,4 @@
-<div class="ng-cloak" ng-cloak ng-controller="ListDeliveryController">
+<div class="ng-cloak container-fluid" ng-cloak>
     <div class="row">
         <h1 class="text-center">List deliveries</h1>
     </div>
@@ -10,7 +10,8 @@
                         <label for="inputDateFrom" class="text-right col-sm-offset-3 col-sm-1 control-label">From</label>
                         <div class="col-sm-5">
                             <p class="input-group">
-                                <input type="text" class="form-control" datepicker-popup="{{format}}"
+                                <input type="text" class="form-control"
+                                       uib-datepicker-popup="dd-MMMM-yyyy"
                                        ng-model="dt.from"
                                        id="inputDateFrom"
                                        is-open="openedFrom"
@@ -40,7 +41,8 @@
                         <label for="inputDateTo" class="text-right col-sm-offset-3 col-sm-1 control-label">To</label>
                         <div class="col-sm-5">
                             <p class="input-group">
-                                <input type="text" class="form-control" datepicker-popup="{{format}}"
+                                <input type="text" class="form-control"
+                                       uib-datepicker-popup="{{format}}"
                                        id="inputDateTo"
                                        ng-model="dt.to"
                                        is-open="openedTo"
@@ -76,7 +78,7 @@
                                    ng-model="retrieved.customer"
                                    id="InputCustomerName"
                                    placeholder="Enter a customer's name"
-                                   typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
+                                   uib-typeahead="customer as customer.name for customer in customers | filter:{name:$viewValue}| limitTo:8 "
                                    typeahead-loading="loadingCompanies"
                                    typeahead-on-select='onSelectCustomer($item, $model, $label)'
                                    class="form-control"
@@ -96,7 +98,7 @@
                                    ng-model="retrieved.driver"
                                    id="InputDriverName"
                                    placeholder="Enter a driver's name"
-                                   typeahead="driver as driver.name for driver in drivers | filter:{name:$viewValue}| limitTo:8 "
+                                   uib-typeahead="driver as driver.name for driver in drivers | filter:{name:$viewValue}| limitTo:8 "
                                    typeahead-loading="loadingCompanies"
                                    typeahead-on-select='onSelectDriver($item, $model, $label)'
                                    class="form-control"
@@ -245,7 +247,7 @@
 
     <div class="row">
         <div class="block-center text-center">
-            <pagination total-items="bigTotalItems"
+            <uib-pagination total-items="bigTotalItems"
                         ng-model="currentPage"
                         max-size="4"
                         items-per-page="15"
@@ -254,7 +256,7 @@
                         boundary-links="true"
                         rotate="false"
                         num-pages="numPages">
-            </pagination>
+            </uib-pagination>
         </div>
     </div>
 
