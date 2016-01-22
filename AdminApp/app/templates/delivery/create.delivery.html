@@ -83,6 +83,30 @@
             </div>
         </div>
 
+         <div class="row row-space">
+            <div class="center-block">
+                <div class="text-center">
+                    <h3>Assignment <small>(can be completed later)</small></h3>
+                </div>
+            </div>
+            <hr>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
+                <label for="pickupCustomer">Driver's Name</label>
+                <input type="text"
+                       id="driverInput"
+                       class="form-control"
+                       ng-model="search.driver"
+                       placeholder="Enter the driver's name"
+                       uib-typeahead="driver as driver.name for driver in drivers | filter:{name:$viewValue}| limitTo:8 "
+                       typeahead-on-select='onSelectDriver($item, $model, $label)'
+                       typeahead-no-results="noResults">
+            </div>
+
+        </div>
+
 
         <div class="row row-space">
             <div class="center-block">
@@ -148,7 +172,7 @@
 
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
-                <label for="InputArea">Area (m²)</label>
+                <label for="InputArea">Dimensions (m²)</label>
                 <input type="text"
                        ng-model="delivery.area"
                        id="InputArea"

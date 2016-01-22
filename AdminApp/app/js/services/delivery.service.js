@@ -9,7 +9,7 @@ AppModule.factory('$delivery',[
             $http
                 .post(Config.baseUrl + "/deliveries", {delivery: delivery})
                 .success(function (res) {
-                    deferred.resolve({deliveryID: res.deliveryId});
+                    deferred.resolve({deliveryId: res.deliveryId});
                 })
                 .error(function (res) {
                     deferred.reject(res);

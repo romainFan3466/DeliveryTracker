@@ -45,9 +45,17 @@ AppModule.controller('DeliveryModalController',
             $uibModalInstance.close();
         };
 
+        $scope.$on('$routeChangeStart', function () {
+            $uibModalInstance.close();
+        });
+
+        $scope.goToPosition = function(id){
+            $location.path("/drivers/track/"+ id);
+        };
+
+
         $scope.edit = function (id) {
             $location.path("/deliveries/edit/"+ id);
-            //$uibModalInstance.close();
         };
 
 

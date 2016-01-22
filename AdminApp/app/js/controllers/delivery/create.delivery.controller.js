@@ -1,6 +1,6 @@
 AppModule.controller("CreateDeliveryController",[
-    "$scope", "$log", "$authentication", "$customer","$delivery",
-    function ($scope, $log, $authentication, $customer, $delivery) {
+    "$scope", "$log", "$authentication", "$customer","$delivery","$driver",
+    function ($scope, $log, $authentication, $customer, $delivery, $driver) {
 
         $scope.customers = [];
         $scope.customer = {};
@@ -13,13 +13,10 @@ AppModule.controller("CreateDeliveryController",[
 
         $scope.success = false;
 
-        var _selectedCustomerPickupLocation = {};
-        var _selectedCustomerDeliveryLocation = {};
-
-
         var _init = function () {
             $scope.search = {
                 customer: "",
+                driver : "",
                 pickup: "",
                 delivery: ""
             };
@@ -29,6 +26,7 @@ AppModule.controller("CreateDeliveryController",[
             $scope.delivery = {
                 senderId : "",
                 receiverId : "",
+                driverId :"",
                 dateCreated: "",
                 dateDue : "",
                 customerId: "",
@@ -41,17 +39,32 @@ AppModule.controller("CreateDeliveryController",[
             $scope.homeAddress = "";
         };
 
+        var _assign = function (deliveryId, driverId) {
+            $driver.assignDelivery(driverId, deliveryId).then(
+                function (res) {
 
-        $scope.onSelectCustomer = function(item, model, label){
-            $scope.delivery.customerId = item.id;
-            angular.copy(item, $scope.customer);
+                },
+                function (res) {
+                    $scope.error = {
+                        value: true,
+                        info: res.info
+                    };
+                    $scope.success = false;
+                }
+            )
         };
+
 
 
         $scope.createDelivery = function(){
             $scope.delivery.dateCreated = new Date();
+
             $delivery.create($scope.delivery).then(
                 function(res){
+                    if (angular.isDefined($scope.delivery.driverId) &&
+                        $scope.delivery.driverId != "") {
+                        _assign(res.deliveryId, $scope.delivery.driverId);
+                    }
                     _init();
                     $scope.error.value = false;
                     $scope.success = true;
@@ -72,10 +85,23 @@ AppModule.controller("CreateDeliveryController",[
             $scope.opened = !$scope.opened;
         };
 
+
+        $scope.onSelectCustomer = function (item, model, label) {
+            $scope.delivery.customerId = item.id;
+            angular.copy(item, $scope.customer);
+        };
+
+
         $scope.onSelectSender = function(item, model, label){
             $scope.delivery.senderId = item.id;
             //angular.copy(item, $scope.sender);
             $scope.sender = item;
+        };
+
+
+        $scope.onSelectDriver = function (item, model, label) {
+            $scope.delivery.driverId= item.id;
+            $scope.driver = item;
         };
 
         $scope.onSelectReceiver = function(item, model, label){
@@ -85,22 +111,21 @@ AppModule.controller("CreateDeliveryController",[
         };
 
 
-        var getCustomer = function (id) {
-            angular.forEach($scope.customers, function (c) {
-                if (c.id == id) {
-                    return c;
-                }
-            });
-            return null;
-        };
-
-
         $customer.getAll().then(
             function (res) {
                 $scope.customers = res.customers;
             },
             function (res) {
                 $log.log("impossible to load customers")
+            }
+        );
+
+        $driver.getAll().then(
+            function (res) {
+                $scope.drivers = res.drivers;
+            },
+            function (res) {
+                $log.log("load drivers impossible");
             }
         );
 

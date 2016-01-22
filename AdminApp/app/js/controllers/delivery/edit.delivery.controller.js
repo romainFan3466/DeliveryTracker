@@ -27,6 +27,7 @@ AppModule.controller("EditDeliveryController",[
 
         var _init = function () {
             $scope.search = {
+                customer :"",
                 sender: "",
                 receiver: "",
                 driver : ""
@@ -106,12 +107,13 @@ AppModule.controller("EditDeliveryController",[
 
 
         var initCustomerNames = function () {
+            $scope.customer = getCustomer($scope.delivery.customerId);
             $scope.sender = getCustomer($scope.delivery.senderId);
             $scope.receiver= getCustomer($scope.delivery.receiverId);
+            $scope.search.customer = $scope.customer.name;
             $scope.search.sender = $scope.sender.name;
             $scope.search.receiver= $scope.receiver.name;
         };
-
 
 
         var getCustomers = function(){
@@ -125,6 +127,7 @@ AppModule.controller("EditDeliveryController",[
                 }
             );
         };
+
 
         var getDrivers = function(){
             $driver.getAll().then(
@@ -196,6 +199,11 @@ AppModule.controller("EditDeliveryController",[
         $scope.onSelectSender = function (item, model, label) {
             $scope.delivery.senderId = item.id;
             $scope.sender = item;
+        };
+
+        $scope.onSelectCustomer = function (item, model, label) {
+            $scope.delivery.customerId= item.id;
+            $scope.customer = item;
         };
 
         $scope.onSelectDriver = function (item, model, label) {
