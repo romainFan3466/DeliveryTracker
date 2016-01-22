@@ -25,6 +25,7 @@ AppModule.controller("EditCustomerController",[
             $scope.updated = false;
             $scope.customer = item;
             angular.copy($scope.customer, customerTemp);
+            $scope.customer.address = item.address.replace(/<br>/g, ',');
             angular.copy($scope.customer.location, $scope.details);
             $scope.found = true;
 

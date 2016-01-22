@@ -1,14 +1,9 @@
 AppModule.controller('CustomerModalController',
     function ($scope, $uibModalInstance, selectedCustomer, $customer) {
 
-        $scope.customer = {};
+        $scope.customer = selectedCustomer;
 
-        $customer.getAddress(selectedCustomer.location.lat, selectedCustomer.location.lng).then(
-            function(res){
-                $scope.customer = selectedCustomer;
-                $scope.customer.address = res.address;
-            }
-        );
+        $scope.customer.address = selectedCustomer.address.replace(/<br>/g, ',');
 
         $scope.close = function () {
             $uibModalInstance.close();

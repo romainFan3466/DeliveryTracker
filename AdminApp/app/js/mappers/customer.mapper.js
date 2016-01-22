@@ -34,7 +34,7 @@ AppModule.factory('CustomerMapper',
                                 };
                             }
                             else if (key == "address"){
-                                self[key] = value.replace(',', /\n/g);
+                                self[key] = value.replace(/,/g, '<br>');
                             }
                             else {
                                 self[key] = value;
@@ -53,7 +53,7 @@ AppModule.factory('CustomerMapper',
                                 };
                             }
                             else if (key == "address"){
-                                self[key] = value.replace(',', '<br>');
+                                self[key] = value.replace(/,/g, '<br>');
                             }
                             else
                                 {
