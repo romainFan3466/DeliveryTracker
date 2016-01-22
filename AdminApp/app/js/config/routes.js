@@ -8,7 +8,7 @@ AppModule.config(['$routeProvider', function ($routeProvider) {
         {url: "/customers/create", templateUrl: "templates/customer/create.customer.html", controller : "CreateCustomerController"},
         {url: "/customers/edit", templateUrl: "templates/customer/edit.customer.html", controller : "EditCustomerController"},
         {url: "/customers/list", templateUrl: "templates/customer/list.customer.html", controller : "ListCustomerController"},
-        {url: "/customer/map", templateUrl: "templates/customer/tracking.customer.html", controller : "TrackCustomerController"},
+        {url: "/customers/map", templateUrl: "templates/customer/tracking.customer.html", controller : "TrackCustomerController"},
         
         {url: "/vehicles/create", templateUrl: "templates/vehicle/create.vehicle.html", controller : "CreateVehicleController"},
         {url: "/vehicles/edit", templateUrl: "templates/vehicle/edit.vehicle.html", controller : "EditVehicleController"},
@@ -24,7 +24,8 @@ AppModule.config(['$routeProvider', function ($routeProvider) {
         {url: "/drivers/create", templateUrl: "templates/driver/create.driver.html", controller : "CreateDriverController"},
         {url: "/drivers/edit", templateUrl: "templates/driver/edit.driver.html", controller : "EditDriverController"},
         {url: "/drivers/list", templateUrl: "templates/driver/list.driver.html", controller : "ListDriverController"},
-        {url: "/drivers/track", templateUrl: "templates/driver/tracking.driver.html", controller : "TrackDriverController"}
+        {url: "/drivers/track", templateUrl: "templates/driver/tracking.driver.html", controller : "TrackDriverController"},
+        {url: "/drivers/track/:driverId", templateUrl: "templates/driver/tracking.driver.html", controller : "TrackDriverController"}
 	];
 
 	$routeProvider.otherwise({redirectTo: '/home'});

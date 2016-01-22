@@ -1,23 +1,55 @@
 AppModule.controller('TrackDriverController', [
-        "$scope", "$log", "$driver",
-        function ($scope, $log, $driver) {
+        "$scope", "$log", "$driver","$routeParams",
+        function ($scope, $log, $driver, $routeParams) {
             $scope.readyDriver = false;
             var drivers = [];
 
             $scope.retrieved = "All";
 
-            $scope.
-            $driver.getAll().then(
-                function(res){
-                    $scope.drivers = res.drivers;
-                        angular.copy(res.drivers, drivers);
-                        var c = {
-                            name: "All"
+            var _getDriver = function (id) {
+                var dr = null;
+                angular.forEach(drivers, function (d) {
+                    if (d.id == id) {
+                        dr = d;
+                    }
+                });
+                return dr;
+            };
+
+
+            var _checkParams = function () {
+                if (angular.isDefined($routeParams.driverId)) {
+                    var driver = _getDriver($routeParams.driverId);
+                    if (driver != null) {
+                        $scope.markers = getMarkers([driver]);
+                        $scope.map = {
+                            center: {
+                                latitude: driver.location.lat,
+                                longitude: driver.location.lng
+                            },
+                            zoom: 10
                         };
-                        $scope.drivers.push(c);
-                        $scope.markers = getMarkers(drivers);
-                        console.log(drivers);
+                        $scope.retrieved = driver.name;
                         $scope.readyDriver = true;
+                    }
+
+                }
+            };
+
+            $driver.getAll().then(
+                function (res) {
+                    $scope.drivers = res.drivers;
+                    angular.copy(res.drivers, drivers);
+                    var c = {
+                        name: "All"
+                    };
+                    $scope.drivers.push(c);
+                    $scope.markers = getMarkers(drivers);
+                    console.log(drivers);
+                    $scope.readyDriver = true;
+
+                    _checkParams();
+
                 }
             );
             
@@ -34,7 +66,7 @@ AppModule.controller('TrackDriverController', [
                             latitude: item.location.lat,
                             longitude: item.location.lng
                         },
-                        zoom: 8
+                        zoom: 10
                     };
                     $scope.readyDriver = true;
                 }
