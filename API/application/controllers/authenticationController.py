@@ -8,8 +8,8 @@ authentication_blueprint = Blueprint('authentication', __name__,)
 
 @authentication_blueprint.route("/api/signIn", methods=['POST'])
 def sign_in():
-    r= request
     user_req = request.get_json(force=True)
+    d = 2
     if(
        "user" in user_req and
         "email" in user_req["user"] and

@@ -30,7 +30,7 @@ class DBHandler:
 
 
 
-    def __enter__(self) -> 'cursor':
+    def __enter__(self):
         """Connect to database and create a DB cursor.
 
         Return the database cursor to the context manager.
