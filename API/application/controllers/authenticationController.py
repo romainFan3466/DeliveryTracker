@@ -13,11 +13,13 @@ def sign_in():
     if(
        "user" in user_req and
         "email" in user_req["user"] and
-        "password" in user_req["user"]
+        "password" in user_req["user"] and
+        "type" in user_req["user"]
     ):
         #check user exist
         cond = {
             "email" : user_req["user"]["email"],
+            "type" : user_req["user"]["type"]
         }
         user = db.select(table="users", conditions=cond, multiple=False)
 
@@ -29,6 +31,7 @@ def sign_in():
             session["user"] = {
                         "id" : user["id"],
                         "email":  user["email"],
+                        "name" : user["name"],
                         "type": user["type"],
                         "company_id": user["company_id"],
             }

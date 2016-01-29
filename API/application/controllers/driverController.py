@@ -148,21 +148,6 @@ def updateLocation(lat:int,lng:int):
     return jsonify(info="Location successfully updated")
 
 
-@driver_blueprint.route("/api/drivers/<driver_id>/deliveries/<delivery_id>", methods=['PUT'])
-@sessionDecorator.required_user("admin")
-def assign_Delivery(driver_id:int, delivery_id:int):
-    company_id = session["user"]["company_id"]
-    if not db.is_existing(table="users", conditions={"id":driver_id, "type":"driver", "company_id": company_id}):
-       return jsonify(info="Driver not found"), 404
-
-    if not db.is_existing(table="deliveries", conditions={"id": delivery_id, "company_id": company_id}):
-        return jsonify(info="Delivery not found"), 404
-
-    db.update(table="deliveries", params={"driver_id": driver_id}, conditions={"id": delivery_id, "company_id": company_id})
-    return jsonify(info="Driver has been assigned"), 200
-
-
-
 
 
 

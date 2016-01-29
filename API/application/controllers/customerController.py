@@ -103,7 +103,7 @@ def delete(id:int):
 
 
 @customer_blueprint.route("/api/customers/<id>", methods=['GET'])
-@sessionDecorator.required_user("admin")
+@sessionDecorator.required_user()
 def get(id:int):
     company_id = session["user"]["company_id"]
     customer_raw = db.select(table="customers", conditions={"id": id, "company_id": company_id}, multiple=False)
