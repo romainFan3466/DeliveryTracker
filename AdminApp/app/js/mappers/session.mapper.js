@@ -10,6 +10,7 @@ AppModule.factory('SessionMapper',
             this.id = "";
             this.email = "";
             this.companyId = "";
+            this.name = "";
             this.type = "";
             if (angular.isDefined(data)) {
                 this.parse(data);
