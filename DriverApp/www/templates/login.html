@@ -1,0 +1,50 @@
+<ion-view view-title="User">
+    <ion-content>
+        <div ng-show="isLogged">
+            <div class="list">
+                <div class="item">
+                    Logged as : {{session.email}}
+                </div>
+            </div>
+             <div class="padding">
+                    <button ng-click="logout()"
+                            class="button button-block button-assertive">
+                        Log out
+                    </button>
+                </div>
+        </div>
+
+
+        <div ng-show="!isLogged">
+            <form ng-submit="loginIn(login)" role="form" name="form">
+                <div class="list">
+                    <label class="item item-input">
+                        <span class="input-label">Username</span>
+                        <input type="email" ng-model="login.email" required>
+                    </label>
+                    <label class="item item-input">
+                        <span class="input-label">Password</span>
+                        <input type="password" ng-model="login.password" required>
+                    </label>
+                </div>
+
+                <div class="padding">
+                    <button
+                            ng-disabled="form.$invalid"
+                            class="button button-block button-positive"
+                            type="submit">
+                        Log in
+                    </button>
+                </div>
+            </form>
+
+            <div ng-show="form.$valid && error.value" class="padding">
+                <div class="card text-center">
+                    <div class="item item-text-wrap card-danger">
+                        Error : {{ error.info }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ion-content>
+</ion-view>

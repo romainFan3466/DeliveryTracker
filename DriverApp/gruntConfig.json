@@ -1,0 +1,102 @@
+{
+  "less": {
+    "options": {
+      "yuicompress": true,
+      "report": "min"
+    },
+    "app": {
+      "src": [
+        "<%= appPath %>/css/main.less"
+      ],
+      "dest": "<%= buildPath %>/css/deliveryTracker.min.css"
+    }
+  },
+  "concat": {
+    "app": {
+      "src": [
+        "<%= appPath %>/js/config/app.js",
+        "<%= appPath %>/js/config/run.js",
+        "<%= appPath %>/js/config/constant.js",
+        "<%= appPath %>/js/directives/**/*.js",
+        "<%= appPath %>/js/mappers/**/*.js",
+        "<%= appPath %>/js/services/**/*.js",
+        "<%= appPath %>/js/controllers/**/*.js",
+        "<%= appPath %>/js/filters/**/*.js",
+        "<%= appPath %>/js/config/routes.js"
+      ],
+      "dest": "<%= buildPath %>/js/deliveryTracker-app.js"
+    },
+    "lib": {
+      "src": [
+        "<%= vendorPath %>/ionic/js/ionic.bundle.min.js",
+        "<%= vendorPath %>/humps/humps.js"
+      ],
+      "dest": "<%= buildPath %>/js/deliveryTracker-lib.min.js"
+    }
+  },
+  "uglify": {
+    "options": {
+      "mangle": false,
+      "compress": false,
+      "beautify": true,
+      "report": "min"
+    },
+    "app": {
+      "src": "<%= concat.app.dest %>",
+      "dest": "<%= buildPath %>/js/deliveryTracker-app.min.js"
+    }
+  },
+  "copy": {
+    "html": {
+      "files": [
+        {
+          "expand": true,
+          "cwd": "<%= appPath %>/templates",
+          "src": "**/*.html",
+          "dest": "<%= buildPath %>/templates/"
+        },
+        {
+          "expand": true,
+          "cwd": "<%= appPath %>",
+          "src": "index.html",
+          "dest": "<%= buildPath %>/"
+        }
+      ]
+    }
+  },
+  "clean": {
+    "pre-deploy": [
+      "<%= concat.app.dest %>",
+      "<%= concat.lib.dest %>",
+      "<%= uglify.app.dest %>",
+      "<%= less.app.dest %>"
+    ],
+    "post-deploy": "<%= buildPath %>/**/*"
+  },
+  "watch": {
+    "styles": {
+      "files": [
+        "<%= appPath %>/css/**/*.less"
+      ],
+      "tasks": [
+        "less"
+      ],
+      "options": {
+        "nospawn": true,
+        "atBegin": true
+      }
+    },
+    "jsApp": {
+      "files": [
+        "<%= appPath %>/js/**/*.js"
+      ],
+      "tasks": [
+        "concat:app"
+      ],
+      "options": {
+        "nospawn": true
+      }
+    }
+  }
+}
+

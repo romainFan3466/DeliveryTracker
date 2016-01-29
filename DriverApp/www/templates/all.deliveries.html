@@ -1,0 +1,40 @@
+<ion-view view-title="Deliveries : All">
+    <ion-content>
+        <div ng-show="error.value" class="padding">
+            <div class="card text-center">
+                <div class="item item-text-wrap card-danger">
+                    Error : {{ error.info }}
+                </div>
+            </div>
+        </div>
+
+
+        <a class="item item-icon-left" href="#app/deliveries/id/3">
+            <i class="icon fa fa-circle positive"></i>
+            Customer : Content (incoming)
+        </a>
+
+        <a class="item item-icon-left" href="#app/deliveries/id/3">
+            <i class="icon fa fa-circle energized"></i>
+            Customer : Content (progress)
+        </a>
+
+        <a class="item item-icon-left" href="#app/deliveries/id/3">
+            <i class="icon fa fa-circle balanced"></i>
+            Customer : Content (success)
+        </a>
+
+        <a class="item item-icon-left" href="#app/deliveries/id/3">
+            <i class="icon fa fa-circle assertive"></i>
+            Customer : Content (failed)
+        </a>
+
+        <a ng-repeat="delivery in deliveries" class="item item-icon-left" ng-href="#app/deliveries/id/{{delivery.id}}">
+            <i class="icon fa fa-circle balanced"></i>
+            {{delivery.customerName}}: {{delivery.content}} (success)
+        </a>
+
+    </ion-content>
+</ion-view>
+
+

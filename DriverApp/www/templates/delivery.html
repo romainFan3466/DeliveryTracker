@@ -1,0 +1,87 @@
+<ion-view view-title="Delivery : # {{delivery.id}}">
+    <ion-content>
+        <ion-refresher
+                on-refresh="getDelivery(delivery.id)">
+        </ion-refresher>
+
+
+        <div class="list">
+            <div class="item item-divider text-center">Status</div>
+            <div class="item  text-center">
+                Taken
+                <i class="item-note icon fa fa-check balanced"></i>
+            </div>
+            <div class="item text-center">
+                Picked up
+                <i class="item-note icon fa fa-check balanced"></i>
+            </div>
+            <div class="item  text-center">
+                On way
+                <i class="item-note icon fa fa-refresh energized"></i>
+            </div>
+            <div class="item  text-center">
+                Delivered
+                <i class="item-note icon fa fa-times assertive"></i>
+            </div>
+        </div>
+
+        <div class="padding">
+            <button class="button button-block button-positive">
+                Take
+            </button>
+        </div>
+
+        <div class="padding">
+            <button class="button button-block button-positive">
+                Pick up
+            </button>
+        </div>
+
+        <div class="padding">
+            <button class="button button-block button-positive">
+                Delivered
+            </button>
+        </div>
+
+        <div class="list">
+            <div class="item item-divider text-center">Details</div>
+            <div class="item"><strong>ID : </strong>{{delivery.id}}</div>
+            <div class="item"><strong>Content : </strong>{{delivery.content}}</div>
+            <div class="item"><strong>Weight : </strong>{{delivery.weight}} kg</div>
+            <div class="item"><strong>Dimensions : </strong>{{delivery.area}} m²</div>
+            <div class="item"><strong>Information : </strong>{{delivery.infor}}</div>
+            <div class="item"><strong>Status : </strong>{{delivery.status}}</div>
+            <div class="item item-divider"></div>
+
+            <div class="item" ng-click="open(delivery.customerId, 'Customer')">
+                <strong>Customer : </strong>{{delivery.customerName}}
+                <span class="item-note">Details</span>
+            </div>
+            <div class="item" ng-click="open(delivery.receiverId, 'Sender')">
+                <strong>Sender</strong>
+                <span class="item-note">Details</span>
+            </div>
+            <div class="item" ng-click="open(delivery.senderId, 'Receiver')">
+                <strong>Receiver</strong>
+                <span class="item-note">Details</span>
+            </div>
+
+        </div>
+
+        <a class="button button-full button-stable"
+           href="geo:53.33196,6.92583?q=53.33196,6.92583(motherfucker)"
+           ng-click="$event.stopPropagation()"
+           target="_blank">
+            Goo
+        </a>
+
+        <div ng-show="error.value" class="padding">
+            <div class="card text-center">
+                <div class="item item-text-wrap card-danger">
+                    Error : {{ error.info }}
+                </div>
+            </div>
+        </div>
+
+    </ion-content>
+</ion-view>

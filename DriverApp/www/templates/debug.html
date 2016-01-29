@@ -1,0 +1,29 @@
+<ion-view view-title="Debug">
+  <ion-content>
+
+       <div class="padding">
+            <button class="button button-block button-positive" ng-click="getPosition()">
+                Get Position
+            </button>
+
+        </div>
+
+            <ul class="list">
+                <li class="item item-divider">Location</li>
+                <li class="item">Enabled : {{ locationEnable }}</li>
+                <li class="item">Fire Counter : {{ fired }}</li>
+                <li class="item">Lat : {{ location.lat }}</li>
+                <li class="item">Lng : {{ location.lng }}</li>
+
+                <li class="item item-divider"></li>
+                <li class="item">Error : {{ err }}</li>
+
+                <li class="item item-divider"></li>
+                <li class="item">Session : {{ session }}</li>
+                <li class="item item-divider"></li>
+                <li class="item">Info : {{ info }}</li>
+                <li class="item">firedBackground : {{firedBackground}}</li>
+            </ul>
+
+  </ion-content>
+</ion-view>
