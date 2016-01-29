@@ -83,11 +83,27 @@ AppModule.factory('$delivery',[
         };
 
 
+        var _assign = function(deliveryId, driverId){
+            var deferred = $q.defer();
+            $http
+                .put(Config.baseUrl + "/deliveries/" + deliveryId + "/drivers/" + driverId)
+                .success(function (res) {
+                    deferred.resolve();
+                })
+                .error(function (res) {
+                    deferred.reject(res);
+                });
+            return deferred.promise
+
+        };
+
+
         return {
             create : _create,
             update : _update,
             get : _get,
-            getAll : _getAll
+            getAll : _getAll,
+            assign : _assign
         }
     }
 ]);
