@@ -5,7 +5,8 @@ AppModule.controller("LoginController",[
 
         $scope.login = {
             email : "",
-            password : ""
+            password : "",
+            type : "admin"
         };
 
         $scope.loading=false;
@@ -38,8 +39,6 @@ AppModule.controller("LoginController",[
             $authentication.logout().then(function (results) {
             });
         };
-
-
 
 
 
