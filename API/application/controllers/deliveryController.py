@@ -1,5 +1,7 @@
 from flask import abort, Blueprint, request, jsonify, session
-from application import db
+from application import db, app
+from werkzeug.utils import secure_filename
+import os
 
 import application.decorators.sessionDecorator as sessionDecorator
 import datetime
@@ -195,7 +197,9 @@ def get(id: int):
         "area": delivery["area"],
         "content": delivery["content"],
         "info": delivery["info"],
+        "canceled" : delivery["canceled"] != 0,
         "driver_id": delivery["driver_id"],
+        "state" : delivery["state"],
         "date_pickup": delivery["date_pickup"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
                                                                                     "date_pickup"] is not None else None,
         "date_delivery": delivery["date_delivery"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
@@ -263,7 +267,9 @@ def getAll():
                 "weight": delivery["weight"],
                 "area": delivery["area"],
                 "content": delivery["content"],
+                "canceled" : delivery["canceled"] != 0,
                 "info": delivery["info"],
+                "state" : delivery["state"],
                 "driver_id": delivery["driver_id"],
                 "date_pickup": delivery["date_pickup"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
                                                                                             "date_pickup"] is not None else None,
@@ -297,15 +303,49 @@ def assign_Delivery(driver_id: int, delivery_id: int):
 
 @delivery_blueprint.route("/api/deliveries/state", methods=['PUT'])
 @sessionDecorator.required_user()
-def assign_Delivery(driver_id: int, delivery_id: int):
-    conditions = {
-        "id": id,
-        "company_id": session["user"]["company_id"]
-    }
+def update_state():
+    req = request.get_json(force=True)
 
-    if session["user"]["type"] == "driver":
-        conditions["driver_id"] = session["user"]["id"]
+    if "state" in req and "delivery_id" in req:
+        state = req["state"]
 
-    delivery = db.is_existing(table="deliveries", conditions=conditions)
+        conditions = {
+            "id": req["delivery_id"],
+            "company_id": session["user"]["company_id"]
+        }
 
-    return jsonify(info="Driver has been assigned"), 200
+        supported_states = ["not taken", "taken", "picked up", "on way", "delivered", "canceled"]
+
+        if not state in supported_states:
+            return jsonify(info="unsupported states", supported_states=supported_states), 400
+
+        if session["user"]["type"] == "driver":
+            conditions["driver_id"] = session["user"]["id"]
+
+        delivery = db.is_existing(table="deliveries", conditions=conditions)
+
+        if delivery is None:
+            return jsonify(info="Delivery not found"), 404
+
+        if state == "canceled":
+            db.update(table="deliveries",params={"canceled" : 1}, conditions=conditions)
+        else :
+            db.update(table="deliveries",params={"state" : state}, conditions=conditions)
+
+        return jsonify(info="Delivery state has been updated"), 200
+
+    else:
+        abort(400)
+
+
+
+@delivery_blueprint.route("/api/deliveries/signature/<delivery_id>", methods=['POST'])
+@sessionDecorator.required_user()
+def upload_file(delivery_id):
+    d= app.config["UPLOAD_FOLDER"]
+    if request.method == 'POST':
+        f =request
+        file = request.files['file']
+        if file and file.content_type == "image/png":
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], delivery_id+".png"))
+    return jsonify(value="ok"), 200

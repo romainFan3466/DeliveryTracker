@@ -2,15 +2,17 @@ from flask import Flask, jsonify, redirect, send_file, session, render_template
 from flask_mail import Mail
 from application.core.DBHandler import DBHandler
 from flask.ext.cors import CORS
+import os
 
 app = Flask(__name__)
-cors = CORS(app, resources=r'/*', origins="http://127.0.0.1:8080", allow_headers="Content-Type", supports_credentials=True)
+cors = CORS(app, resources=r'/*', origins="http://127.0.0.1:*", allow_headers="Content-Type", supports_credentials=True)
 # cors = CORS(app)
 
 app.config.update(
     DEBUG=True,
     SECRET_KEY="youwillneverguess",
-
+    UPLOAD_FOLDER=os.path.join(os.path.dirname(os.path.abspath(__file__)),"POD") ,
+    ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg'],
     # mail settings
     MAIL_SERVER='ssl0.ovh.net',
     MAIL_PORT=465,
