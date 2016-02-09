@@ -7,6 +7,8 @@
     "humps": "~1.0.0"
   },
   "dependencies": {
-    "font-awesome": "fontawesome#~4.5.0"
+    "font-awesome": "fontawesome#~4.5.0",
+    "angular-signature": "~0.1.7",
+    "signature_pad": "~1.5.2"
   }
 }

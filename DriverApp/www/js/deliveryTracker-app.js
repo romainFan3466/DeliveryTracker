@@ -1,7 +1,8 @@
 
 var AppModule = angular.module('DeliveryTrackerMobile.app', [
     'ionic',
-    'ngCordova'
+    'ngCordova',
+    'signature'
 ]);
 
 AppModule.config(['$httpProvider', function($httpProvider) {
@@ -66,7 +67,6 @@ AppModule.run(["$rootScope", "$ionicPlatform", "$state", "$log", "$cordovaDialog
                 StatusBar.styleDefault();
             }
 
-
             $ionicPlatform.registerBackButtonAction(function () {
                 if ($ionicHistory.backView() != null) {
                     $ionicHistory.goBack();
@@ -83,8 +83,7 @@ AppModule.run(["$rootScope", "$ionicPlatform", "$state", "$log", "$cordovaDialog
                 }
             }, 100);
 
-
-            if (cordova) {
+            if (window.cordova) {
                 cordova.plugins.locationAccuracy.request(onRequestSuccess, onRequestFailure, cordova.plugins.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY);
 
                 cordova.plugins.backgroundMode.setDefaults({
@@ -110,8 +109,8 @@ AppModule.run(["$rootScope", "$ionicPlatform", "$state", "$log", "$cordovaDialog
 
 
 AppModule.constant('Config', {
-    baseUrl : "http://deliverytracker.romainfanara.com/api"
-    //baseUrl : "http://127.0.0.1:5000/api"
+    //baseUrl : "http://deliverytracker.romainfanara.com/api"
+    baseUrl : "http://127.0.0.1:5000/api"
 });
 
 AppModule.directive('googleplace', ["$log", function($log) {
@@ -300,7 +299,9 @@ AppModule.factory('DeliveryMapper', [
             "weight",
             "area",
             "info",
-            "content"
+            "content",
+            "state",
+            "canceled"
         ];
 
 
@@ -816,11 +817,60 @@ AppModule.factory('$delivery',[
         };
 
 
+        function dataURItoBlob(dataURI) {
+            var binary = atob(dataURI.split(',')[1]);
+            var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            var array = [];
+            for (var i = 0; i < binary.length; i++) {
+                array.push(binary.charCodeAt(i));
+            }
+            return new Blob([new Uint8Array(array)], {
+                type: mimeString
+            });
+        }
+
+        var _uploadPOD = function(deliveryId, file){
+            var deferred = $q.defer();
+            var fd = new FormData();
+            var imgBlob = dataURItoBlob(file);
+            fd.append('file', imgBlob);
+            $http
+                .post(Config.baseUrl + "/deliveries/signature/"+deliveryId,
+                fd,
+                {
+                    transformRequest: angular.identity,
+                    headers: {'Content-Type': undefined}
+                })
+                .success(function (res) {
+                    deferred.resolve();
+                })
+                .error(function (res) {
+                    deferred.reject(res);
+                });
+            return deferred.promise
+        };
+
+        var _setState = function(deliveryId, state){
+            var deferred = $q.defer();
+            $http
+                .put(Config.baseUrl + "/deliveries/state", {state : state, delivery_id:deliveryId})
+                .success(function (res) {
+                    deferred.resolve();
+                })
+                .error(function (res) {
+                    deferred.reject(res);
+                });
+            return deferred.promise
+        };
+
+
         return {
             create : _create,
             update : _update,
             get : _get,
-            getAll : _getAll
+            getAll : _getAll,
+            uploadPOD: _uploadPOD,
+            setState: _setState
         }
     }
 ]);
@@ -1047,8 +1097,8 @@ AppModule.controller('CustomerModalController', [
 ]);
 
 AppModule.controller("DebugController", [
-    "$scope", "$log", "$cordovaGeolocation", "$interval", "$ionicPlatform","$rootScope",
-    function ($scope, $log, $cordovaGeolocation, $interval, $ionicPlatform, $rootScope) {
+    "$scope", "$log", "$cordovaGeolocation", "$interval", "$ionicPlatform","$rootScope","$cordovaBarcodeScanner","$window",
+    function ($scope, $log, $cordovaGeolocation, $interval, $ionicPlatform, $rootScope, $cordovaBarcodeScanner, $window) {
 
         $scope.location = {};
         $scope.err = {};
@@ -1056,6 +1106,8 @@ AppModule.controller("DebugController", [
         $scope.fired = 0;
         $scope.firedBackground = 0;
         var positionInterval = {};
+        $scope.myHeight = 0;
+        $scope.myWidth = 0;
 
 
         var startWatcher = function () {
@@ -1082,6 +1134,7 @@ AppModule.controller("DebugController", [
         $scope.$on('upload-counter', function(){
            $scope.firedBackground = $rootScope.uploadCount;
         });
+
 
         $ionicPlatform.ready(function () {
             $scope.getPosition = function () {
@@ -1145,6 +1198,25 @@ AppModule.controller("DeliveriesAllController", [
             )
         };
 
+         $scope.isState = function(status, deliveryState){
+            var result = false;
+
+            switch (status){
+                case "incoming":
+                    result = deliveryState == "not taken";
+                    break;
+                case "progress":
+                    valid = ["taken", "picked up", "on way"];
+                    result = valid.indexOf(deliveryState)!=-1;
+                    break;
+                case "delivered":
+                    result = deliveryState == "delivered";
+                    break;
+                default :
+            }
+            return result;
+        };
+
         $scope.$on('$ionicView.enter', function () {
             _init();
             $ionicLoading.show();
@@ -1159,12 +1231,26 @@ AppModule.controller("DeliveriesAllController", [
     }
 ]);
 AppModule.controller("DeliveriesController", [
-    "$scope", "$log","$state",
-    function ($scope, $log, $state) {
+    "$scope", "$log","$state","$cordovaBarcodeScanner", "$ionicPlatform",
+    function ($scope, $log, $state, $cordovaBarcodeScanner, $ionicPlatform) {
 
         $scope.go = function(path){
             $state.go("app.deliveries"+path);
         };
+
+         $ionicPlatform.ready(function () {
+             $scope.scanCode = function () {
+                 $cordovaBarcodeScanner
+                     .scan()
+                     .then(function (barcodeData) {
+                         $state.go("app.single", {deliveryId : barcodeData.text})
+                     }, function (error) {
+                         alert("barecode not recognized");
+                     });
+             };
+         });
+
+        //#app/deliveries/id/{{delivery.id}}
 
     }]);
 AppModule.controller("DeliveriesIncomingController", [
@@ -1180,8 +1266,8 @@ AppModule.controller("DeliveriesProgressController", [
     }
 ]);
 AppModule.controller("DeliveryController", [
-    "$scope", "$log", "$delivery", "$ionicLoading", "$stateParams", "$customer", "$ionicModal", "$timeout",
-    function ($scope, $log, $delivery, $ionicLoading, $stateParams, $customer, $ionicModal, $timeout) {
+    "$scope", "$log", "$delivery", "$ionicLoading", "$stateParams", "$customer", "$ionicModal", "$timeout","$window","$ionicPopup",
+    function ($scope, $log, $delivery, $ionicLoading, $stateParams, $customer, $ionicModal, $timeout, $window, $ionicPopup) {
 
         var _init = function () {
             $scope.error = {
@@ -1193,22 +1279,114 @@ AppModule.controller("DeliveryController", [
             $scope.customer = {};
         };
 
+
+
+        $scope.isBalanced= function(status, deliveryState){
+
+            if(!angular.isDefined(deliveryState)){
+                return false;
+            }
+
+            var result = false;
+            var valid = [];
+            switch (status){
+                case "taken":
+                    result = deliveryState !="not taken";
+                    break;
+                case "picked up":
+                    valid = ["picked up", "on way", "delivered"];
+                    result = valid.indexOf(deliveryState)!=-1;
+                    break;
+                case "on way":
+                    valid = ["delivered"];
+                    result = deliveryState == "delivered";
+                    break;
+                case "delivered":
+                    result = deliveryState == "delivered";
+                    break;
+                default :
+            }
+            return result;
+        };
+
+        $scope.showState = function(status, deliveryState){
+            if (!angular.isDefined(deliveryState)) {
+                return false;
+            }
+
+            var result = false;
+            var valid = [];
+            switch (status){
+                case "taken":
+                        result = true;
+                    break;
+                case "picked up":
+                    result = deliveryState != "not taken";
+                    break;
+                case "on way":
+                    valid = ["on way", "delivered"];
+                    result = valid.indexOf(deliveryState)!=-1;
+                    break;
+                case "delivered":
+                    valid = ["delivered"];
+                    result = valid.indexOf(deliveryState)!=-1;
+                    break;
+                default :
+            }
+            return result;
+        };
+
+
         $ionicModal.fromTemplateUrl('templates/customer.modal.html', {
+            id : 1,
             scope: $scope,
             animation: 'slide-in-up'
         }).then(function (modal) {
             $scope.modal = modal
         });
 
-        $scope.open = function (id, title) {
+
+        $ionicModal.fromTemplateUrl('templates/signature.html', {
+            id : 2,
+            scope: $scope,
+            animation: 'slide-in-up'
+        }).then(function (modal) {
+            $scope.modal2 = modal
+        });
+
+
+        $scope.showCancel = function () {
+            var confirmPopup = $ionicPopup.confirm({
+                title: 'Confirmation',
+                template: 'Are you sure you want to cancel this delivery ?'
+            });
+            confirmPopup.then(function (res) {
+                if (res) {
+                    $scope.setState($scope.delivery.id,"canceled");
+                } else {
+                    console.log('You are not sure');
+                }
+            });
+        };
+
+
+        $scope.openCustomer = function (id, title) {
             $scope.titleModal = title;
             _getCustomer(id);
             $scope.modal.show()
         };
 
-        $scope.closeModal = function () {
-            $scope.modal.hide();
+
+        $scope.openSignature = function () {
+            $scope.modal2.show()
         };
+
+
+        $scope.closeModal = function (index) {
+            if (index == 1) $scope.modal.hide();
+            if (index == 2) $scope.modal2.hide();
+        };
+
 
         $scope.$on('$destroy', function () {
             $scope.modal.remove();
@@ -1223,6 +1401,21 @@ AppModule.controller("DeliveryController", [
                 function (res) {
                 }
             );
+        };
+
+
+        $scope.setState = function(deliveryId, state){
+            $delivery.setState(deliveryId,state).then(
+                function(){
+                    $scope.closeModal(2);
+                    $ionicLoading.show();
+                    $scope.getDelivery(deliveryId);
+                },
+                function(){
+
+                }
+
+            )
         };
 
 
@@ -1245,6 +1438,18 @@ AppModule.controller("DeliveryController", [
                 .finally(function () {
                     $scope.$broadcast('scroll.refreshComplete');
                 });
+        };
+
+        $scope.uploadPOD = function(deliveryId, file){
+            $delivery.uploadPOD(deliveryId, file).then(
+                function(res){
+                    $log.log("uploaded");
+                    $scope.setState(deliveryId, "delivered");
+                },
+                function(res){
+                    $log.log("error");
+                }
+            )
         };
 
 

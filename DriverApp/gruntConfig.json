@@ -29,7 +29,9 @@
     "lib": {
       "src": [
         "<%= vendorPath %>/ionic/js/ionic.bundle.min.js",
-        "<%= vendorPath %>/humps/humps.js"
+        "<%= vendorPath %>/humps/humps.js",
+        "<%= vendorPath %>/signature_pad/signature_pad.min.js",
+        "<%= vendorPath %>/angular-signature/src/signature.js"
       ],
       "dest": "<%= buildPath %>/js/deliveryTracker-lib.min.js"
     }

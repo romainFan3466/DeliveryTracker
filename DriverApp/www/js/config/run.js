@@ -51,7 +51,6 @@ AppModule.run(["$rootScope", "$ionicPlatform", "$state", "$log", "$cordovaDialog
                 StatusBar.styleDefault();
             }
 
-
             $ionicPlatform.registerBackButtonAction(function () {
                 if ($ionicHistory.backView() != null) {
                     $ionicHistory.goBack();
@@ -68,8 +67,7 @@ AppModule.run(["$rootScope", "$ionicPlatform", "$state", "$log", "$cordovaDialog
                 }
             }, 100);
 
-
-            if (cordova) {
+            if (window.cordova) {
                 cordova.plugins.locationAccuracy.request(onRequestSuccess, onRequestFailure, cordova.plugins.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY);
 
                 cordova.plugins.backgroundMode.setDefaults({
