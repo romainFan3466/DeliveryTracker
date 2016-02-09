@@ -8,30 +8,16 @@
             </div>
         </div>
 
-
-        <a class="item item-icon-left" href="#app/deliveries/id/3">
-            <i class="icon fa fa-circle positive"></i>
-            Customer : Content (incoming)
-        </a>
-
-        <a class="item item-icon-left" href="#app/deliveries/id/3">
-            <i class="icon fa fa-circle energized"></i>
-            Customer : Content (progress)
-        </a>
-
-        <a class="item item-icon-left" href="#app/deliveries/id/3">
-            <i class="icon fa fa-circle balanced"></i>
-            Customer : Content (success)
-        </a>
-
-        <a class="item item-icon-left" href="#app/deliveries/id/3">
-            <i class="icon fa fa-circle assertive"></i>
-            Customer : Content (failed)
-        </a>
-
-        <a ng-repeat="delivery in deliveries" class="item item-icon-left" ng-href="#app/deliveries/id/{{delivery.id}}">
-            <i class="icon fa fa-circle balanced"></i>
-            {{delivery.customerName}}: {{delivery.content}} (success)
+        <a ng-repeat="delivery in deliveries" class="item item-icon-left" ng-href="#/app/deliveries/id/{{delivery.id}}">
+            <i class="icon fa fa-circle"
+                    ng-class="{
+                        positive : !delivery.canceled && isState('incoming',delivery.state),
+                        energized : !delivery.canceled && isState('progress',delivery.state),
+                        balanced : !delivery.canceled && isState('delivered',delivery.state),
+                        assertive : delivery.canceled
+                                }"></i>
+            {{delivery.customerName}}: {{delivery.content}} <small ng-show="isState('progress', delivery.state)">({{delivery.state}})</small>
+            <span class="item-note">#{{$index + 1}}</span>
         </a>
 
     </ion-content>

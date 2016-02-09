@@ -14,7 +14,9 @@ AppModule.factory('DeliveryMapper', [
             "weight",
             "area",
             "info",
-            "content"
+            "content",
+            "state",
+            "canceled"
         ];
 
 

@@ -4,42 +4,95 @@
                 on-refresh="getDelivery(delivery.id)">
         </ion-refresher>
 
+        <div ng-show="error.value" class="padding">
+            <div class="card text-center">
+                <div class="item item-text-wrap card-danger">
+                    Error : {{ error.info }}
+                </div>
+            </div>
+        </div>
 
         <div class="list">
             <div class="item item-divider text-center">Status</div>
             <div class="item  text-center">
                 Taken
-                <i class="item-note icon fa fa-check balanced"></i>
+                <i class="item-note icon fa"
+                        ng-class="{
+                        'fa-check balanced' : isBalanced('taken', delivery.state),
+                        'fa-times assertive' : delivery.state == 'not taken'
+                        }"></i>
             </div>
-            <div class="item text-center">
+
+            <div ng-show="showState('picked up', delivery.state)" class="item text-center" >
                 Picked up
-                <i class="item-note icon fa fa-check balanced"></i>
+                <i class="item-note icon fa"
+                        ng-class="{
+                        'fa-check balanced' : isBalanced('picked up', delivery.state),
+                        'fa-refresh energized' :!delivery.canceled && delivery.state == 'taken',
+                        'fa-times assertive' : delivery.state == 'taken' && delivery.canceled
+                        }"></i>
             </div>
-            <div class="item  text-center">
+
+            <div  ng-show="showState('on way', delivery.state)" class="item  text-center">
                 On way
-                <i class="item-note icon fa fa-refresh energized"></i>
+                <i class="item-note icon fa"
+                        ng-class="{
+                        'fa-check balanced' : isBalanced('on way', delivery.state),
+                        'fa-refresh energized' : !delivery.canceled && delivery.state == 'on way',
+                        'fa-times assertive' : delivery.canceled
+                        }"></i>
             </div>
-            <div class="item  text-center">
+
+            <div ng-show="delivery.canceled || showState('delivered', delivery.state)" class="item  text-center">
                 Delivered
-                <i class="item-note icon fa fa-times assertive"></i>
+                <i class="item-note icon fa"
+                        ng-class="{
+                        'fa-check balanced' : !delivery.canceled && isBalanced('delivered', delivery.state),
+                        'fa-refresh energized' : !delivery.canceled && delivery.state == 'on way',
+                        'fa-times assertive' : delivery.canceled
+                        }"></i>
             </div>
+            <div ng-show="delivery.canceled" class="item text-center assertive">
+                <strong>Canceled</strong>
+            </div>
+
         </div>
 
-        <div class="padding">
-            <button class="button button-block button-positive">
-                Take
-            </button>
+        <div class="padding" ng-show="!delivery.canceled && delivery.state == 'not taken'">
+            <a ng-href="geo:{{delivery.sender.location.lat}},{{delivery.sender.location.lng}}?
+                        q={{delivery.sender.location.lat}},{{delivery.sender.location.lng}}({{del}})"
+
+               class="button button-block button-positive"
+               ng-click="setState(delivery.id,'taken') && $event.stopPropagation()">
+                Take & Go
+            </a>
         </div>
 
-        <div class="padding">
-            <button class="button button-block button-positive">
+        <div class="padding" ng-show="!delivery.canceled && delivery.state == 'taken'">
+            <button class="button button-block button-positive" ng-click="setState(delivery.id, 'picked up')">
                 Pick up
             </button>
         </div>
 
-        <div class="padding">
+        <div class="padding" ng-show="!delivery.canceled && delivery.state == 'picked up'">
+            <a ng-href="geo:{{delivery.receiver.location.lat}},{{delivery.receiver.location.lng}}?
+                        q={{delivery.receiver.location.lat}},{{delivery.receiver.location.lng}}({{del}})"
+
+               class="button button-block button-positive"
+               ng-click="setState(delivery.id,'on way') && $event.stopPropagation()">
+                Deliver
+            </a>
+        </div>
+
+        <div class="padding" ng-show="!delivery.canceled && delivery.state == 'on way'" ng-click="openSignature()">
             <button class="button button-block button-positive">
                 Delivered
+            </button>
+        </div>
+
+         <div class="padding" ng-hide="delivery.state=='delivered' || delivery.state=='canceled'">
+            <button class="button button-block button-assertive" ng-disabled="error.value" ng-click="showCancel()">
+                Cancel
             </button>
         </div>
 
@@ -53,15 +106,15 @@
             <div class="item"><strong>Status : </strong>{{delivery.status}}</div>
             <div class="item item-divider"></div>
 
-            <div class="item" ng-click="open(delivery.customerId, 'Customer')">
+            <div class="item" ng-click="openCustomer(delivery.customerId, 'Customer')">
                 <strong>Customer : </strong>{{delivery.customerName}}
                 <span class="item-note">Details</span>
             </div>
-            <div class="item" ng-click="open(delivery.receiverId, 'Sender')">
+            <div class="item" ng-click="openCustomer(delivery.receiverId, 'Sender')">
                 <strong>Sender</strong>
                 <span class="item-note">Details</span>
             </div>
-            <div class="item" ng-click="open(delivery.senderId, 'Receiver')">
+            <div class="item" ng-click="openCustomer(delivery.senderId, 'Receiver')">
                 <strong>Receiver</strong>
                 <span class="item-note">Details</span>
             </div>
@@ -75,13 +128,7 @@
             Goo
         </a>
 
-        <div ng-show="error.value" class="padding">
-            <div class="card text-center">
-                <div class="item item-text-wrap card-danger">
-                    Error : {{ error.info }}
-                </div>
-            </div>
-        </div>
+
 
     </ion-content>
 </ion-view>

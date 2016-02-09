@@ -1,6 +1,6 @@
 AppModule.controller("DebugController", [
-    "$scope", "$log", "$cordovaGeolocation", "$interval", "$ionicPlatform","$rootScope",
-    function ($scope, $log, $cordovaGeolocation, $interval, $ionicPlatform, $rootScope) {
+    "$scope", "$log", "$cordovaGeolocation", "$interval", "$ionicPlatform","$rootScope","$cordovaBarcodeScanner","$window",
+    function ($scope, $log, $cordovaGeolocation, $interval, $ionicPlatform, $rootScope, $cordovaBarcodeScanner, $window) {
 
         $scope.location = {};
         $scope.err = {};
@@ -8,6 +8,8 @@ AppModule.controller("DebugController", [
         $scope.fired = 0;
         $scope.firedBackground = 0;
         var positionInterval = {};
+        $scope.myHeight = 0;
+        $scope.myWidth = 0;
 
 
         var startWatcher = function () {
@@ -34,6 +36,7 @@ AppModule.controller("DebugController", [
         $scope.$on('upload-counter', function(){
            $scope.firedBackground = $rootScope.uploadCount;
         });
+
 
         $ionicPlatform.ready(function () {
             $scope.getPosition = function () {

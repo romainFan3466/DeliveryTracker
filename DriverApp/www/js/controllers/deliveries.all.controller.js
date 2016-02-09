@@ -29,6 +29,25 @@ AppModule.controller("DeliveriesAllController", [
             )
         };
 
+         $scope.isState = function(status, deliveryState){
+            var result = false;
+
+            switch (status){
+                case "incoming":
+                    result = deliveryState == "not taken";
+                    break;
+                case "progress":
+                    valid = ["taken", "picked up", "on way"];
+                    result = valid.indexOf(deliveryState)!=-1;
+                    break;
+                case "delivered":
+                    result = deliveryState == "delivered";
+                    break;
+                default :
+            }
+            return result;
+        };
+
         $scope.$on('$ionicView.enter', function () {
             _init();
             $ionicLoading.show();

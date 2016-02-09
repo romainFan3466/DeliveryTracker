@@ -1,7 +1,8 @@
 
 var AppModule = angular.module('DeliveryTrackerMobile.app', [
     'ionic',
-    'ngCordova'
+    'ngCordova',
+    'signature'
 ]);
 
 AppModule.config(['$httpProvider', function($httpProvider) {

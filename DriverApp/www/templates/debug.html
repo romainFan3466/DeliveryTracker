@@ -1,29 +1,39 @@
 <ion-view view-title="Debug">
-  <ion-content>
+    <ion-content>
 
-       <div class="padding">
+        <div class="padding">
             <button class="button button-block button-positive" ng-click="getPosition()">
                 Get Position
             </button>
-
         </div>
 
-            <ul class="list">
-                <li class="item item-divider">Location</li>
-                <li class="item">Enabled : {{ locationEnable }}</li>
-                <li class="item">Fire Counter : {{ fired }}</li>
-                <li class="item">Lat : {{ location.lat }}</li>
-                <li class="item">Lng : {{ location.lng }}</li>
 
-                <li class="item item-divider"></li>
-                <li class="item">Error : {{ err }}</li>
+        <ul class="list">
+            <li class="item item-divider">Location</li>
+            <li class="item">Enabled : {{ locationEnable }}</li>
+            <li class="item">Fire Counter : {{ fired }}</li>
+            <li class="item">Lat : {{ location.lat }}</li>
+            <li class="item">Lng : {{ location.lng }}</li>
 
-                <li class="item item-divider"></li>
-                <li class="item">Session : {{ session }}</li>
-                <li class="item item-divider"></li>
-                <li class="item">Info : {{ info }}</li>
-                <li class="item">firedBackground : {{firedBackground}}</li>
-            </ul>
+            <li class="item item-divider"></li>
+            <li class="item">Error : {{ err }}</li>
 
-  </ion-content>
+            <li class="item item-divider"></li>
+            <li class="item">Session : {{ session }}</li>
+            <li class="item item-divider"></li>
+            <li class="item">Info : {{ info }}</li>
+            <li class="item">firedBackground : {{firedBackground}}</li>
+        </ul>
+
+        <button ng-click="scanCode()" class="button button-full button-stable">
+            Scan
+        </button>
+
+
+        <div class="padding">
+            <signature-pad accept="accept" clear="clear"></signature-pad>
+        </div>
+
+
+    </ion-content>
 </ion-view>

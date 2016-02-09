@@ -83,11 +83,60 @@ AppModule.factory('$delivery',[
         };
 
 
+        function dataURItoBlob(dataURI) {
+            var binary = atob(dataURI.split(',')[1]);
+            var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            var array = [];
+            for (var i = 0; i < binary.length; i++) {
+                array.push(binary.charCodeAt(i));
+            }
+            return new Blob([new Uint8Array(array)], {
+                type: mimeString
+            });
+        }
+
+        var _uploadPOD = function(deliveryId, file){
+            var deferred = $q.defer();
+            var fd = new FormData();
+            var imgBlob = dataURItoBlob(file);
+            fd.append('file', imgBlob);
+            $http
+                .post(Config.baseUrl + "/deliveries/signature/"+deliveryId,
+                fd,
+                {
+                    transformRequest: angular.identity,
+                    headers: {'Content-Type': undefined}
+                })
+                .success(function (res) {
+                    deferred.resolve();
+                })
+                .error(function (res) {
+                    deferred.reject(res);
+                });
+            return deferred.promise
+        };
+
+        var _setState = function(deliveryId, state){
+            var deferred = $q.defer();
+            $http
+                .put(Config.baseUrl + "/deliveries/state", {state : state, delivery_id:deliveryId})
+                .success(function (res) {
+                    deferred.resolve();
+                })
+                .error(function (res) {
+                    deferred.reject(res);
+                });
+            return deferred.promise
+        };
+
+
         return {
             create : _create,
             update : _update,
             get : _get,
-            getAll : _getAll
+            getAll : _getAll,
+            uploadPOD: _uploadPOD,
+            setState: _setState
         }
     }
 ]);
