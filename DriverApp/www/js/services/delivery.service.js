@@ -105,7 +105,7 @@ AppModule.factory('$delivery',[
                 fd,
                 {
                     transformRequest: angular.identity,
-                    headers: {'Content-Type': undefined}
+                    headers: {'Content-Type': undefined }
                 })
                 .success(function (res) {
                     deferred.resolve();

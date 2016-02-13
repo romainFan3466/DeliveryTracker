@@ -13,3 +13,4 @@ AppModule.config(['$httpProvider', function($httpProvider) {
 //AppModule.config(function($compileProvider ){
 //  $compileProvider.aHrefSanitizationWhitelist(/^\s*(geo):/);
 //});
+

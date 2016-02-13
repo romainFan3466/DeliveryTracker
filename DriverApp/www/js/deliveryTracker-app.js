@@ -14,6 +14,7 @@ AppModule.config(['$httpProvider', function($httpProvider) {
 //  $compileProvider.aHrefSanitizationWhitelist(/^\s*(geo):/);
 //});
 
+
 AppModule.run(["$rootScope", "$ionicPlatform", "$state", "$log", "$cordovaDialogs", "$ionicHistory", "$interval",
     function ($rootScope, $ionicPlatform, $state, $log, $cordovaDialogs, $ionicHistory, $interval) {
         $rootScope.positionInterval = null;
@@ -106,11 +107,9 @@ AppModule.run(["$rootScope", "$ionicPlatform", "$state", "$log", "$cordovaDialog
         });
     }
 ]);
-
-
 AppModule.constant('Config', {
-    //baseUrl : "http://deliverytracker.romainfanara.com/api"
-    baseUrl : "http://127.0.0.1:5000/api"
+    baseUrl : "http://deliverytracker.romainfanara.com/api"
+    //baseUrl : "http://127.0.0.1:5000/api"
 });
 
 AppModule.directive('googleplace', ["$log", function($log) {
@@ -839,7 +838,7 @@ AppModule.factory('$delivery',[
                 fd,
                 {
                     transformRequest: angular.identity,
-                    headers: {'Content-Type': undefined}
+                    headers: {'Content-Type': undefined }
                 })
                 .success(function (res) {
                     deferred.resolve();

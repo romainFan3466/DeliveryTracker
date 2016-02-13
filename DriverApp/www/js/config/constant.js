@@ -1,6 +1,4 @@
-
-
 AppModule.constant('Config', {
-    //baseUrl : "http://deliverytracker.romainfanara.com/api"
-    baseUrl : "http://127.0.0.1:5000/api"
+    baseUrl : "http://deliverytracker.romainfanara.com/api"
+    //baseUrl : "http://127.0.0.1:5000/api"
 });
