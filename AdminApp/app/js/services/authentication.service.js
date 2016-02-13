@@ -15,16 +15,16 @@ AppModule.factory('$authentication',[
                 .success(function (res) {
                     if(angular.isDefined(res.session) && res.session != "logout"){
                         _modelSession = new SessionMapper(res.session, true);
-                        deferred.resolve( {name : _modelSession.name});
+                        deferred.resolve( {session : _modelSession});
                     }
                     else{
                         _modelSession = new SessionMapper(null, false);
-                        deferred.reject();
+                        deferred.reject(res);
                     }
                 })
                 .error(function(res){
                     _modelSession = new SessionMapper(null, false);
-                    deferred.reject();
+                    deferred.reject(res);
                 });
             return deferred.promise;
         };
@@ -39,10 +39,10 @@ AppModule.factory('$authentication',[
                 .post(Config.baseUrl + '/signIn', cred)
                 .success(function (res) {
                     _modelSession = new SessionMapper(res.session, true);
-                    deferred.resolve( {name : _modelSession.name});
+                    deferred.resolve( {session : _modelSession});
                 })
                 .error(function(res){
-                    var info = (angular.isDefined(res.info))? res.info : null;
+                    var info = (res && res.info)? res.info : null;
                     deferred.reject({info : info});
                 });
             return deferred.promise;

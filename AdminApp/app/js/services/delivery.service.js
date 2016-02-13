@@ -97,7 +97,6 @@ AppModule.factory('$delivery',[
 
         };
 
-
         return {
             create : _create,
             update : _update,

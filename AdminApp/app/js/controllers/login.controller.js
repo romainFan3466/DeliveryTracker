@@ -3,7 +3,7 @@ AppModule.controller("LoginController",[
     "$scope", "$log", "$authentication", "$location","$timeout",
     function ($scope, $log, $authentication, $location, $timeout) {
 
-        $scope.login = {
+        $scope.user = {
             email : "",
             password : "",
             type : "admin"
@@ -24,13 +24,11 @@ AppModule.controller("LoginController",[
                         },
                         2000
                     )
-
                 },
                 function(result){
                     $scope.loading=false;
                     $scope.wrongCredentials=true;
                 }
-
             );
         };
 

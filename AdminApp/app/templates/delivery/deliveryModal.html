@@ -11,7 +11,14 @@
                 <li><strong>Dimensions : </strong>{{delivery.area}} m²</li>
                 <li><strong>Information : </strong>{{delivery.infor}}</li>
                 <br>
-                <li><strong>Status : </strong>{{delivery.status}}</li>
+                <li
+                        ng-class="{'text-success' : delivery.state=='delivered',
+                                    'text-danger' : delivery.state=='canceled'}">
+                    <strong>State : </strong>{{delivery.state}}
+                </li>
+                <li ng-show="delivery.state=='delivered'"><strong>POD :</strong><br>
+                    <img ng-src="{{signatureUrl}}" alt="signature" height="150">
+                </li>
             </ul>   
 
         </div>

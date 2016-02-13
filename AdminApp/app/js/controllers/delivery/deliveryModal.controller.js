@@ -1,5 +1,5 @@
 AppModule.controller('DeliveryModalController',
-    function ($scope, $uibModalInstance, selectedDelivery, $customer, $location, $driver) {
+    function ($scope, $uibModalInstance, selectedDelivery, $customer, $location, $driver, Config, $log) {
 
         $scope.delivery = selectedDelivery;
         $scope.sender = {};
@@ -12,6 +12,9 @@ AppModule.controller('DeliveryModalController',
              getCustomer($scope.delivery.senderId, 'customer');
              getCustomer($scope.delivery.senderId, 'sender');
              getCustomer($scope.delivery.receiverId, 'receiver');
+             if($scope.delivery.state == 'delivered'){
+                 $scope.signatureUrl = Config.baseUrl + "/deliveries/signature/"+$scope.delivery.id;
+             }
 
              if($scope.delivery.driverId !=null){
                  $driver.get($scope.delivery.driverId).then(

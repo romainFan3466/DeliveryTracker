@@ -40,7 +40,7 @@ AppModule.controller("CreateDeliveryController",[
         };
 
         var _assign = function (deliveryId, driverId) {
-            $driver.assignDelivery(driverId, deliveryId).then(
+            $delivery.assign(deliveryId, driverId).then(
                 function (res) {
 
                 },
