@@ -11,8 +11,7 @@ cors = CORS(app, resources=r'/*', origins="http://127.0.0.1:*", allow_headers="C
 app.config.update(
     DEBUG=True,
     SECRET_KEY="youwillneverguess",
-    UPLOAD_FOLDER=os.path.join(os.path.dirname(os.path.abspath(__file__)),"POD") ,
-    ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg'],
+    UPLOAD_FOLDER=os.path.join(os.path.dirname(os.path.abspath(__file__)),"POD"),
     # mail settings
     MAIL_SERVER='ssl0.ovh.net',
     MAIL_PORT=465,

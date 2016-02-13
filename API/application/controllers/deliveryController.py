@@ -1,6 +1,5 @@
-from flask import abort, Blueprint, request, jsonify, session
+from flask import abort, Blueprint, request, jsonify, session, send_file
 from application import db, app
-from werkzeug.utils import secure_filename
 import os
 
 import application.decorators.sessionDecorator as sessionDecorator
@@ -324,7 +323,7 @@ def update_state():
 
         delivery = db.is_existing(table="deliveries", conditions=conditions)
 
-        if delivery is None:
+        if not delivery:
             return jsonify(info="Delivery not found"), 404
 
         if state == "canceled":
@@ -338,14 +337,44 @@ def update_state():
         abort(400)
 
 
-
 @delivery_blueprint.route("/api/deliveries/signature/<delivery_id>", methods=['POST'])
-@sessionDecorator.required_user()
+@sessionDecorator.required_user('driver')
 def upload_file(delivery_id):
-    d= app.config["UPLOAD_FOLDER"]
-    if request.method == 'POST':
-        f =request
+
+    conditions = {
+            "id": delivery_id,
+            "driver_id" : session["user"]["id"],
+            "company_id": session["user"]["company_id"]
+    }
+
+    if not db.is_existing(table="deliveries", conditions=conditions):
+        return jsonify(info="Delivery not found"), 404
+
+    if "file" in request.files:
         file = request.files['file']
-        if file and file.content_type == "image/png":
+        if file.content_type == 'image/png':
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], delivery_id+".png"))
-    return jsonify(value="ok"), 200
+            return jsonify(value="ok"), 200
+    abort(400)
+
+
+
+@delivery_blueprint.route("/api/deliveries/signature/<delivery_id>", methods=['GET'])
+@sessionDecorator.required_user('admin')
+def get_signature(delivery_id):
+
+    conditions = {
+            "id": delivery_id,
+            "company_id": session["user"]["company_id"]
+    }
+
+
+    if not db.is_existing(table="deliveries", conditions=conditions):
+        return jsonify(info="Delivery not found"), 404
+
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], delivery_id+".png")
+
+    if os.path.isfile(file_path):
+        return send_file(file_path, "image/png")
+
+    return jsonify(info="Signature not found"), 404
