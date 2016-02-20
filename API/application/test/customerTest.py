@@ -14,6 +14,7 @@ class TestBlueprintCustomer:
                     "lat": 12.343545,
                     "lng": 2.345435,
                 },
+                "address" : "Bla bla",
                 "phone":"546456445"
             }
         }
@@ -40,7 +41,6 @@ class TestBlueprintCustomer:
 
         res = client.post(url_for('customer.create'), data=json.dumps({}),  content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         session.clear()
         mocker.stopall()
 
@@ -154,7 +154,8 @@ class TestBlueprintCustomer:
             "name" : "romain",
             "location_lat": 12.343545,
             "location_lng": 2.345435,
-            "phone":"546456445"
+            "phone":"546456445",
+            "address" : "Bla bla"
         }
         mocker.patch.object(DBHandler, 'select',  return_value=sql_result)
         res = client.get(url_for('customer.get', id=12))
@@ -166,7 +167,8 @@ class TestBlueprintCustomer:
                     "lat": 12.343545,
                     "lng": 2.345435,
                 },
-                "phone":"546456445"
+                "phone":"546456445",
+                "address" : "Bla bla"
             }
         }
         assert res.status_code == 200
@@ -204,7 +206,6 @@ class TestBlueprintCustomer:
         mocker.patch.object(DBHandler, 'is_existing', return_value=True)
         res = client.put(url_for('customer.update', id=12), data=json.dumps({}),  content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         mocker.stopall()
 
 
@@ -248,7 +249,8 @@ class TestBlueprintCustomer:
                     "lat": 23.456,
                     "lng": 4.4654
                 },
-                "phone": "325345345"
+                "phone": "325345345",
+                "address" : "Bla bla"
             }
         }
         mocker.patch.object(DBHandler, 'is_existing', side_effect=is_existing)
@@ -294,7 +296,8 @@ class TestBlueprintCustomer:
             "name" : "romain",
             "location_lat": 12.343545,
             "location_lng": 2.345435,
-            "phone":"546456445"
+            "phone":"546456445",
+            "address" : "Bla bla"
         }]
 
         _customer = {
@@ -305,7 +308,8 @@ class TestBlueprintCustomer:
                     "lat": 12.343545,
                     "lng": 2.345435,
                 },
-                "phone":"546456445"
+                "phone":"546456445",
+                "address" : "Bla bla"
             }
         }
 

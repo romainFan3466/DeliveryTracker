@@ -1,9 +1,7 @@
 from flask import url_for
 import pytest_mock
-#from unittest.mock import patch
 import pytest
 from application.core.DBHandler import DBHandler
-from application.classes.Location import Location
 import json
 import datetime
 
@@ -34,7 +32,6 @@ class TestBlueprintVehicle:
         }
         res = client.post(url_for("vehicle.create"), data=json.dumps({}), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
 
 
 
@@ -101,7 +98,6 @@ class TestBlueprintVehicle:
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         res = client.put(url_for("vehicle.update", id=12), data=json.dumps({}), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         mocker.stopall()
 
 
@@ -139,7 +135,6 @@ class TestBlueprintVehicle:
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         res = client.put(url_for("vehicle.update", id=12), data=json.dumps(_vehicle), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         mocker.stopall()
         
         
@@ -158,7 +153,6 @@ class TestBlueprintVehicle:
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         res = client.put(url_for("vehicle.update", id=12), data=json.dumps(_vehicle), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         mocker.stopall()
         
         
@@ -177,7 +171,6 @@ class TestBlueprintVehicle:
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         res = client.put(url_for("vehicle.update", id=12), data=json.dumps(_vehicle), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         mocker.stopall()
         
     
@@ -196,7 +189,6 @@ class TestBlueprintVehicle:
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         res = client.put(url_for("vehicle.update", id=12), data=json.dumps(_vehicle), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         mocker.stopall()
         
         
@@ -215,7 +207,6 @@ class TestBlueprintVehicle:
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         res = client.put(url_for("vehicle.update", id=12), data=json.dumps(_vehicle), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         mocker.stopall()
         
         
@@ -234,7 +225,6 @@ class TestBlueprintVehicle:
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         res = client.put(url_for("vehicle.update", id=12), data=json.dumps(_vehicle), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         mocker.stopall()
 
 
@@ -328,8 +318,11 @@ class TestBlueprintVehicle:
             "registration" : "GHFDH546",
             "type" : "tractor",
             "max_weight" : 40.3,
-            "max_area" : 34.45
+            "max_area" : 34.45,
+            "weight" : 23.1,
+            "area" : 2.1,
         }
+
         mocker.patch.object(DBHandler, 'select', return_value=vehicle)
         res = client.get(url_for('vehicle.get', id=12))
         assert res.status_code == 200
@@ -373,7 +366,9 @@ class TestBlueprintVehicle:
             "registration": "GHFDH546",
             "type": "tractor",
             "max_weight": 40.3,
-            "max_area": 34.45
+            "max_area": 34.45,
+            "weight" : 23.1,
+            "area" : 2.1
         }
 
         mocker.patch.object(DBHandler, "select", return_value=[_vehicle,])

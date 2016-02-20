@@ -37,7 +37,6 @@ class TestBlueprintDriver:
         wrong_delivery = {}
         res = client.post(url_for("driver.create"), data=json.dumps(wrong_delivery), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
 
 
     def test_create_existing_name(self, mocker, client):
@@ -125,7 +124,6 @@ class TestBlueprintDriver:
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         res = client.put(url_for("driver.update", id=12), data=json.dumps(wrong_delivery), content_type='application/json')
         assert res.status_code == 400
-        assert res.json == {'info': 'Bad request, some required fields are not recognized'}
         mocker.stopall()
 
 

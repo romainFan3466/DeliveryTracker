@@ -8,6 +8,7 @@ import pytest
 from flask import Flask, jsonify
 from flask_mail import Mail
 from application.core.DBHandler import DBHandler
+import os
 
 
 
@@ -21,24 +22,7 @@ def app():
         DEBUG=True,
         SECRET_KEY="youwillneverguess",
 
-        # mail settings
-        MAIL_SERVER='ssl0.ovh.net',
-        MAIL_PORT=465,
-        MAIL_USE_TLS=False,
-        MAIL_USE_SSL=True,
-
-        # gmail authentication
-        MAIL_USERNAME="contact@romainfanara.com",
-        MAIL_PASSWORD="password",
-
-        # mail accounts =
-        MAIL_DEFAULT_SENDER='contact@romainfanara.com',
-
-        # DB config
-        DB_HOST="127.0.0.1",
-        DB_USER="root",
-        DB_PASSWORD="jf/b6rb",
-        DB_DATABASE="deliveryTracker",
+        UPLOAD_FOLDER=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),"POD"),
 
         DB_CONFIG={
                 "host": "127.0.0.1",
