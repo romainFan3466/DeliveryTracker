@@ -2,6 +2,7 @@ from flask import  Blueprint, request, jsonify, abort, session
 from application import db
 from application.classes.Location import Location
 import application.decorators.sessionDecorator as sessionDecorator
+from application.classes.Customer import Customer
 
 
 customer_blueprint = Blueprint('customer', __name__,)
@@ -10,40 +11,29 @@ customer_blueprint = Blueprint('customer', __name__,)
 @customer_blueprint.route("/api/customers", methods=['POST'])
 @sessionDecorator.required_user("admin")
 def create():
-    customer_data = request.get_json(force=True)
-    if (
-        "customer" in customer_data and
-        "name" in customer_data["customer"] and
-        "address" in customer_data["customer"] and
-        "location" in customer_data["customer"] and
-        "lat" in customer_data["customer"]["location"] and
-        "lng" in customer_data["customer"]["location"] and
-        "phone" in customer_data["customer"] and
-        Location.isValid(**customer_data["customer"]["location"])
-        ):
+    req = request.get_json(force=True)
+    customer = Customer.parse(req, "create")
+    if "errors" in customer:
+        return jsonify(errors=customer["errors"]),400
+    customer = customer["customer"]
 
-        ### check customer name duplication
-        company_id = session["user"]["company_id"]
-        if db.is_existing(table="customers",
-                          conditions={"name":customer_data["customer"]["name"], "company_id":company_id}):
-            return jsonify(info="Customer with the same name already exist"),400
+    ### check customer name duplication
+    company_id = session["user"]["company_id"]
+    if db.is_existing(table="customers",
+                      conditions={"name":customer["name"], "company_id":company_id}):
+        return jsonify(info="Customer with the same name already exist"),400
 
-
-        # record customer
-        data = {
-            "name" : customer_data["customer"]["name"],
-            "address" : customer_data["customer"]["address"],
-            "location_lat" : customer_data["customer"]["location"]["lat"],
-            "location_lng" : customer_data["customer"]["location"]["lng"],
-            "phone" : customer_data["customer"]["phone"],
-            "company_id" : company_id
-        }
-        customerId= db.insert(table="customers", params=data)
-
-        return jsonify(info="Customer created successfully", customerId=customerId),200
-    else:
-        abort(400)
-
+    # record customer
+    data = {
+        "name" : customer["name"],
+        "address" : customer["address"],
+        "location_lat" : customer["location"]["lat"],
+        "location_lng" : customer["location"]["lng"],
+        "phone" : customer["phone"],
+        "company_id" : company_id
+    }
+    customerId= db.insert(table="customers", params=data)
+    return jsonify(info="Customer created successfully", customerId=customerId),200
 
 
 @customer_blueprint.route("/api/customers/<id>", methods=['PUT'])
@@ -54,38 +44,36 @@ def update(id:int):
     if not db.is_existing(table="customers", conditions={"id":id, "company_id": company_id}):
         return jsonify(info="Customer not found"),404
 
-    customer_data = request.get_json(force=True)
+    req = request.get_json(force=True)
+    req = Customer.parse(req, "update")
 
-    if ("customer" in customer_data):
-        customer = {}
-        #name
-        if "name" in customer_data["customer"]:
-            if db.is_existing(table="customers", conditions={"name":customer_data["customer"]["name"],"company_id": company_id}):
-                return jsonify(info="Customer with the same name already exists"),400
+    if "errors" in req:
+        return jsonify(errors=req["errors"]),400
+    req = req["customer"]
+        
+    customer = {}
+    #name
+    if "name" in req:
+        if db.is_existing(table="customers", conditions={"name":req["name"],"company_id": company_id}):
+            return jsonify(info="Customer with the same name already exists"),400
 
-            customer["name"] = customer_data["customer"]["name"]
+        customer["name"] = req["name"]
 
-        #address
-        if "address" in customer_data["customer"]:
-            customer["address"] = customer_data["customer"]["address"]
+    #address
+    if "address" in req:
+        customer["address"] = req["address"]
 
-        #location
-        if ("location" in customer_data["customer"] and
-            "lat" in customer_data["customer"]["location"] and
-            "lng" in customer_data["customer"]["location"] and
-            Location.isValid(**customer_data["customer"]["location"])
-            ):
-            customer["location_lat"] = customer_data["customer"]["location"]["lat"]
-            customer["location_lng"] = customer_data["customer"]["location"]["lng"]
+    #location
+    if "location" in req :
+        customer["location_lat"] = req["location"]["lat"]
+        customer["location_lng"] = req["location"]["lng"]
 
-        #phone
-        if "phone" in customer_data["customer"]:
-            customer["phone"] = customer_data["customer"]["phone"]
+    #phone
+    if "phone" in req:
+        customer["phone"] = req["phone"]
 
-        db.update(table="customers", params=customer, conditions={"id":id})
-        return jsonify(info="Customer data updated successfully"),200
-    else:
-        abort(400)
+    db.update(table="customers", params=customer, conditions={"id":id})
+    return jsonify(info="Customer data updated successfully"),200
 
 
 

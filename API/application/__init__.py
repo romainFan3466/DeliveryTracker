@@ -64,9 +64,9 @@ app.register_blueprint(delivery_blueprint)
 
 
 
-@app.errorhandler(400)
-def bad_request(error):
-    return jsonify(info="Bad request, some required fields are not recognized"),400
+# @app.errorhandler(400)
+# def bad_request(error):
+#     return jsonify(info="Bad request, some required fields are not recognized"),400
 
 @app.errorhandler(401)
 def unauthorized(error):

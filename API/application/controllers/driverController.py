@@ -1,10 +1,10 @@
 from flask import Blueprint, request, abort, jsonify, session
 from application import db
 from application.core.generator import Generator
-import application.controllers.deliveryController as deliveries
 import application.decorators.sessionDecorator as sessionDecorator
 import application.decorators.locationDecorator as locationDecorator
 from werkzeug.security import generate_password_hash
+from application.classes.Driver import Driver
 
 driver_blueprint = Blueprint('driver', __name__,)
 
@@ -13,35 +13,33 @@ driver_blueprint = Blueprint('driver', __name__,)
 def create():
     company_id = session["user"]["company_id"]
     driver = request.get_json(force=True)
-    if(
-        "driver" in driver and
-        "name" in driver["driver"] and
-        "email" in driver["driver"] and
-        "phone" in driver["driver"]
-    ):
+    driver = Driver.parse(driver, "create")
+    
+    if "errors" in driver:
+        return jsonify(errors=driver["errors"]),400
+    driver = driver["driver"]
 
-        if db.is_existing(table="users",
-                          conditions={"name": driver["driver"]["name"], "type":"driver", "company_id":company_id}):
-            return jsonify(info="Driver with the same name already exist"),400
+    if db.is_existing(table="users",
+                      conditions={"name": driver["name"], "type":"driver", "company_id":company_id}):
+        return jsonify(info="Driver with the same name already exist"),400
 
-        if db.is_existing(table="users",
-                          conditions={"email": driver["driver"]["email"], "type":"driver", "company_id": company_id}):
-                return jsonify(info="Driver with the same email already exist"),400
+    if db.is_existing(table="users",
+                      conditions={"email": driver["email"], "type":"driver", "company_id": company_id}):
+            return jsonify(info="Driver with the same email already exist"),400
 
-        pwd = Generator.password()
+    pwd = Generator.password()
 
-        driver_data={
-            "name" : driver["driver"]["name"],
-            "email" : driver["driver"]["email"],
-            "password" : generate_password_hash(pwd),
-            "company_id" : company_id,
-            "phone" : driver["driver"]["phone"],
-            "type":"driver"
-        }
-        driverId = db.insert(table="users", params=driver_data)
-        return jsonify(info="Driver created successfully", driverId=driverId, password=pwd),200
-    else :
-        abort(400)
+    driver_data={
+        "name" : driver["name"],
+        "email" : driver["email"],
+        "password" : generate_password_hash(pwd),
+        "company_id" : company_id,
+        "phone" : driver["phone"],
+        "type":"driver"
+    }
+    driverId = db.insert(table="users", params=driver_data)
+    return jsonify(info="Driver created successfully", driverId=driverId, password=pwd),200
+   
 
 
 @driver_blueprint.route("/api/drivers/<id>", methods=['PUT'])
@@ -52,29 +50,30 @@ def update(id:int):
         return jsonify(info="Driver not found"), 404
 
     driver = request.get_json(force=True)
-    if "driver" in driver:
-        driver_data = {}
+    driver = Driver.parse(driver, "update")
+    
+    if "errors" in driver:
+        return jsonify(errors=driver["errors"]),400
+    driver = driver["driver"]
+    driver_data = {}
 
-        if "name" in driver["driver"]:
-            if db.is_existing(table="users",
-                          conditions={"name": driver["driver"]["name"], "type":"driver", "company_id": company_id}):
-                return jsonify(info="Driver with the same name already exist"),400
-            driver_data["name"] = driver["driver"]["name"]
+    if "name" in driver:
+        if db.is_existing(table="users",
+                      conditions={"name": driver["name"], "type":"driver", "company_id": company_id}):
+            return jsonify(info="Driver with the same name already exist"),400
+        driver_data["name"] = driver["name"]
 
-        if "email" in driver["driver"]:
-            if db.is_existing(table="users",
-                          conditions={"email": driver["driver"]["email"], "type":"driver", "company_id": company_id}):
-                return jsonify(info="Driver with the same email already exist"),400
-            driver_data["email"] = driver["driver"]["email"]
+    if "email" in driver:
+        if db.is_existing(table="users",
+                      conditions={"email": driver["email"], "type":"driver", "company_id": company_id}):
+            return jsonify(info="Driver with the same email already exist"),400
+        driver_data["email"] = driver["email"]
 
-        if "phone" in driver["driver"]:
-            driver_data["phone"] = driver["driver"]["phone"]
+    if "phone" in driver:
+        driver_data["phone"] = driver["phone"]
 
-        db.update(table="users", params=driver_data, conditions={"id": id})
-        return jsonify(info="Driver updated successfully"),200
-
-    else :
-        abort(400)
+    db.update(table="users", params=driver_data, conditions={"id": id})
+    return jsonify(info="Driver updated successfully"),200
 
 
 @driver_blueprint.route("/api/drivers/<id>", methods=['DELETE'])

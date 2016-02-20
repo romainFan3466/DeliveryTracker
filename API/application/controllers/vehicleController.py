@@ -1,6 +1,7 @@
 from flask import Blueprint, session, request, abort, jsonify
 from application import db
 import application.decorators.sessionDecorator as sessionDecorator
+from application.classes.Vehicle import Vehicle
 vehicle_blueprint = Blueprint('vehicle', __name__,)
 
 
@@ -9,32 +10,25 @@ vehicle_blueprint = Blueprint('vehicle', __name__,)
 def create():
     company_id = session["user"]["company_id"]
     rq = request.get_json(force=True)
-    if(
-        "vehicle" in rq and
-        "registration" in rq["vehicle"] and
-        "type" in rq["vehicle"] and
-        "max_weight" in rq["vehicle"] and
-        "max_area" in rq["vehicle"] and
-        (isinstance(rq["vehicle"]["max_area"], float) or isinstance(rq["vehicle"]["max_area"], int)) and
-        (isinstance(rq["vehicle"]["max_weight"], float) or isinstance(rq["vehicle"]["max_weight"], int))
-    ):
-        if db.is_existing(table="vehicles",
-                          conditions={"registration": rq["vehicle"]["registration"] ,"company_id": company_id}):
-            return jsonify(info="Vehicle with the same registration already exist"), 400
+    vehicle= Vehicle.parse(rq, "create")
+    if "errors" in vehicle:
+        return jsonify(errors=vehicle["errors"]),400
+    vehicle= vehicle["vehicle"]
+    
+    if db.is_existing(table="vehicles",
+                      conditions={"registration": vehicle["registration"] ,"company_id": company_id}):
+        return jsonify(info="Vehicle with the same registration already exist"), 400
 
-        vehicle_data = {
-            "registration" : rq["vehicle"]["registration"],
-            "type" : rq["vehicle"]["type"],
-            "max_weight" : rq["vehicle"]["max_weight"],
-            "max_area" : rq["vehicle"]["max_area"],
-            "company_id" : company_id
-        }
+    vehicle_data = {
+        "registration" : vehicle["registration"],
+        "type" : vehicle["type"],
+        "max_weight" : vehicle["max_weight"],
+        "max_area" : vehicle["max_area"],
+        "company_id" : company_id
+    }
 
-        vehicle_id = db.insert(table="vehicles", params=vehicle_data)
-        return jsonify(info="Vehicle created successfully", vehicleId=vehicle_id)
-    else :
-        abort(400)
-
+    vehicle_id = db.insert(table="vehicles", params=vehicle_data)
+    return jsonify(info="Vehicle created successfully", vehicleId=vehicle_id)
 
 
 @vehicle_blueprint.route("/api/vehicles/<id>", methods=['PUT'])
@@ -46,35 +40,35 @@ def update(id:int):
          return jsonify(info="Vehicle not found"), 404
 
     rq = request.get_json(force=True)
+    vehicle= Vehicle.parse(rq, "update")
+    if "errors" in vehicle:
+        return jsonify(errors=vehicle["errors"]),400
+    vehicle= vehicle["vehicle"]
+    vehicle_data = {}
 
-    if "vehicle" in rq :
-        vehicle_data = {}
+    if "registration" in vehicle:
+        if db.is_existing(table="vehicles",
+                      conditions={"registration": vehicle["registration"] ,"company_id": company_id}):
+            return jsonify(info="Vehicle with the same registration already exist"), 400
+        vehicle_data["registration"] = vehicle["registration"]
 
-        if "registration" in rq["vehicle"]:
-            if db.is_existing(table="vehicles",
-                          conditions={"registration": rq["vehicle"]["registration"] ,"company_id": company_id}):
-                return jsonify(info="Vehicle with the same registration already exist"), 400
-            vehicle_data["registration"] = rq["vehicle"]["registration"]
+    if "type" in vehicle:
+        vehicle_data["type"] = vehicle["type"]
 
-        if "type" in rq["vehicle"]:
-            vehicle_data["type"] = rq["vehicle"]["type"]
+    if "max_weight" in vehicle:
+        max_weight = vehicle["max_weight"]
+        if not (isinstance(max_weight, float) or isinstance(max_weight, int)) or max_weight>100000 or max_weight<0:
+            abort(400)
+        vehicle_data["max_weight"] = vehicle["max_weight"]
 
-        if "max_weight" in rq["vehicle"]:
-            max_weight = rq["vehicle"]["max_weight"]
-            if not (isinstance(max_weight, float) or isinstance(max_weight, int)) or max_weight>100000 or max_weight<0:
-                abort(400)
-            vehicle_data["max_weight"] = rq["vehicle"]["max_weight"]
+    if "max_area" in vehicle:
+        max_area = vehicle["max_area"]
+        if not (isinstance(max_area, float) or isinstance(max_area, int)) or max_area>150 or max_area<0:
+            abort(400)
+        vehicle_data["max_area"] = vehicle["max_area"]
 
-        if "max_area" in rq["vehicle"]:
-            max_area = rq["vehicle"]["max_area"]
-            if not (isinstance(max_area, float) or isinstance(max_area, int)) or max_area>150 or max_area<0:
-                abort(400)
-            vehicle_data["max_area"] = rq["vehicle"]["max_area"]
-
-        db.update(table="vehicles", params=vehicle_data, conditions={"id": id})
-        return jsonify(info="Vehicle updated successfully"),200
-    else :
-        abort(400)
+    db.update(table="vehicles", params=vehicle_data, conditions={"id": id})
+    return jsonify(info="Vehicle updated successfully"),200
 
 
 @vehicle_blueprint.route("/api/vehicles/<id>", methods=['DELETE'])

@@ -1,7 +1,7 @@
 from flask import abort, Blueprint, jsonify, request, session
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from application import db
+from application.classes.User import User
 
 authentication_blueprint = Blueprint('authentication', __name__,)
 
@@ -9,39 +9,33 @@ authentication_blueprint = Blueprint('authentication', __name__,)
 @authentication_blueprint.route("/api/signIn", methods=['POST'])
 def sign_in():
     user_req = request.get_json(force=True)
-    d = 2
-    if(
-       "user" in user_req and
-        "email" in user_req["user"] and
-        "password" in user_req["user"] and
-        "type" in user_req["user"]
-    ):
+    user = User.parse(user_req, "create")
+    if "errors" in user :
+        return jsonify(errors=user["errors"]), 400
+
         #check user exist
-        cond = {
-            "email" : user_req["user"]["email"],
-            "type" : user_req["user"]["type"]
+    cond = {
+        "email" : user_req["user"]["email"],
+        "type" : user_req["user"]["type"]
+    }
+    user = db.select(table="users", conditions=cond, multiple=False)
+
+    if user is None :
+        return jsonify(info="Bad Credentials"),400
+
+    if check_password_hash(user["password"],user_req["user"]["password"]):
+
+        session["user"] = {
+                    "id" : user["id"],
+                    "email":  user["email"],
+                    "name" : user["name"],
+                    "type": user["type"],
+                    "company_id": user["company_id"],
         }
-        user = db.select(table="users", conditions=cond, multiple=False)
-
-        if user is None :
-            return jsonify(info="Bad Credentials"),400
-
-        if check_password_hash(user["password"],user_req["user"]["password"]):
-
-            session["user"] = {
-                        "id" : user["id"],
-                        "email":  user["email"],
-                        "name" : user["name"],
-                        "type": user["type"],
-                        "company_id": user["company_id"],
-            }
-            session.permanent = True
-
-            return jsonify(session=session["user"], info="Your are currently logged in"), 200
-        else:
-            return jsonify(info="Bad Credentials"),400
-    else :
-        abort(400)
+        session.permanent = True
+        return jsonify(session=session["user"], info="Your are currently logged in"), 200
+    else:
+        return jsonify(info="Bad Credentials"),400
 
 
 @authentication_blueprint.route("/api/logOut", methods=['GET', "OPTIONS"])
@@ -59,5 +53,3 @@ def status():
     return jsonify(session="logout")
 
 #TODO recover password
-
-
