@@ -1,13 +1,80 @@
 from flask import abort, Blueprint, request, jsonify, session, send_file
 from application import db, app
 from application.classes.Delivery import Delivery
-from voluptuous import MultipleInvalid
 import os
-
 import application.decorators.sessionDecorator as sessionDecorator
-import datetime
 
 delivery_blueprint = Blueprint('delivery', __name__, )
+
+@sessionDecorator.required_user()
+def get_all_deliveries(conditions:dict, return_obj=False, get_locations=False):
+    conditions = Delivery.parse(conditions, "getAll")
+    if "errors" in conditions:
+        return jsonify(errors=conditions["errors"]),400
+
+    cond = ""
+    conditions = conditions["conditions"] if "conditions" in conditions else conditions
+
+    if "start" in conditions and "end" in conditions:
+        cond = "(deliveries.date_due BETWEEN '" + conditions["start"].strftime("%Y-%m-%d %H:%M:%S") + \
+                   "' AND '" + conditions["end"].strftime("%Y-%m-%d %H:%M:%S") + "') "
+
+    if "customer_id" in conditions:
+        if cond != "":
+            cond += " AND "
+        cond += "deliveries.customer_id = " + str(conditions["customer_id"])
+
+
+    if "state" in conditions:
+        if cond != "":
+            cond += " AND "
+        cond += "deliveries.state='" + str(conditions["state"]) +"'"
+
+    if cond != "":
+        cond += " AND "
+
+        # Driver session
+    cond += "deliveries.company_id=" + str(session["user"]["company_id"]) + " "
+
+    if session["user"]["type"] == "driver":
+        cond += "AND deliveries.driver_id=" + str(session["user"]["id"]) + " "
+
+
+    query = """ SELECT deliveries.* , customers.name AS customer_name"""
+
+    extra_inner = ""
+    if get_locations is True:
+        query += """ , senders.location_lng as sender_lng,
+                  senders.location_lat as sender_lat,
+                  receivers.location_lng as receiver_lng,
+                  receivers.location_lat as receiver_lat """
+        extra_inner = """
+          INNER JOIN customers as senders
+          ON deliveries.sender_id=senders.id
+          INNER JOIN customers as receivers
+          ON deliveries.receiver_id=receivers.id
+      """
+
+    query+= """ FROM deliveries""" + """
+      INNER JOIN customers
+      ON deliveries.customer_id=customers.id """ + extra_inner + """
+      WHERE """ + cond + " ;"
+
+    deliveries_raw = db.query(query)
+
+    deliveries = []
+
+    if return_obj:
+        for delivery in deliveries_raw:
+            deliveries.append(Delivery(delivery))
+
+    else :
+        for delivery in deliveries_raw:
+            d= {"delivery": Delivery(delivery).to_dict()}
+            deliveries.append(d)
+
+    return deliveries
+
 
 
 @delivery_blueprint.route("/api/deliveries", methods=['POST'])
@@ -98,26 +165,7 @@ def get(id: int):
     if delivery is None:
         return jsonify(info="Delivery not found"), 404
 
-    d = {
-        "id": delivery["id"],
-        "customer_id": delivery["customer_id"],
-        "sender_id": delivery["sender_id"],
-        "receiver_id": delivery["receiver_id"],
-        "weight": delivery["weight"],
-        "area": delivery["area"],
-        "content": delivery["content"],
-        "info": delivery["info"],
-        "canceled" : delivery["canceled"] != 0,
-        "driver_id": delivery["driver_id"],
-        "state" : delivery["state"],
-        "date_pickup": delivery["date_pickup"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
-                                                                                    "date_pickup"] is not None else None,
-        "date_delivery": delivery["date_delivery"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
-                                                                                        "date_delivery"] is not None else None,
-        "date_created": delivery["date_created"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
-                                                                                      "date_created"] is not None else None,
-        "date_due": delivery["date_due"].strftime("%Y-%m-%d %H:%M:%S") if delivery["date_due"] is not None else None,
-    }
+    d= {"delivery": Delivery(delivery).to_dict()}
     return jsonify(delivery=d), 200
 
 
@@ -125,78 +173,14 @@ def get(id: int):
 @sessionDecorator.required_user()
 def getAll():
     args = request.get_json(force=True)
-    conditions = Delivery.parse(args, "getAll")
-    if "errors" in conditions:
-        return jsonify(errors=conditions["errors"]),400
-
-    cond = ""
-    conditions = conditions["conditions"] if "conditions" in conditions else conditions
-
-    if "start" in conditions and "end" in conditions:
-        cond = "(deliveries.date_due BETWEEN '" + conditions["start"].strftime("%Y-%m-%d %H:%M:%S") + \
-                   "' AND '" + conditions["end"].strftime("%Y-%m-%d %H:%M:%S") + "') "
-
-    if "customer_id" in conditions:
-        if cond != "":
-            cond += " AND "
-        cond += "deliveries.customer_id = " + str(conditions["customer_id"])
-
-    if cond != "":
-        cond += " AND "
-
-        # Driver session
-    cond += "deliveries.company_id=" + str(session["user"]["company_id"]) + " "
-
-    if session["user"]["type"] == "driver":
-        cond += "AND deliveries.driver_id=" + str(session["user"]["id"]) + " "
-
-    query = """
-      SELECT deliveries.* , customers.name AS customer_name
-      FROM deliveries""" + """
-      INNER JOIN customers
-      ON deliveries.customer_id=customers.id """ + """
-      WHERE """ + cond + " ;"
-
-    deliveries_raw = db.query(query)
-
-    if len(deliveries_raw) < 1:
-        return jsonify(deliveries=[]), 200
-
-    deliveries = []
-
-    for delivery in deliveries_raw:
-        d = {
-            "delivery": {
-                "id": delivery["id"],
-                "customer_id": delivery["customer_id"],
-                "customer_name": delivery["customer_name"],
-                "sender_id": delivery["sender_id"],
-                "receiver_id": delivery["receiver_id"],
-                "weight": delivery["weight"],
-                "area": delivery["area"],
-                "content": delivery["content"],
-                "canceled" : delivery["canceled"] != 0,
-                "info": delivery["info"],
-                "state" : delivery["state"],
-                "driver_id": delivery["driver_id"],
-                "date_pickup": delivery["date_pickup"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
-                                                                                            "date_pickup"] is not None else None,
-                "date_delivery": delivery["date_delivery"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
-                                                                                                "date_delivery"] is not None else None,
-                "date_created": delivery["date_created"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
-                                                                                              "date_created"] is not None else None,
-                "date_due": delivery["date_due"].strftime("%Y-%m-%d %H:%M:%S") if delivery[
-                                                                                      "date_due"] is not None else None,
-            }
-        }
-        deliveries.append(d)
-
+    deliveries = get_all_deliveries(args)
+    #TODO : for driver, send by order closest to farthest
     return jsonify(deliveries=deliveries), 200
 
 
 @delivery_blueprint.route("/api/deliveries/<delivery_id>/drivers/<driver_id>", methods=['PUT'])
 @sessionDecorator.required_user("admin")
-def assign_Driver(delivery_id: int, driver_id: int,):
+def assign_driver(delivery_id: int, driver_id: int,):
     company_id = session["user"]["company_id"]
     if not db.is_existing(table="users", conditions={"id": driver_id, "type": "driver", "company_id": company_id}):
         return jsonify(info="Driver not found"), 404
