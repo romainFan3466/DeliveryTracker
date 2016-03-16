@@ -411,7 +411,7 @@ class TestBlueprintDelivery:
 ############## ASSIGN ########################
 
     def test_assign_unauthorized(self, client, mocker):
-        res = client.put(url_for("delivery.assign_Driver", delivery_id=12, driver_id=2))
+        res = client.put(url_for("delivery.assign_driver", delivery_id=12, driver_id=2))
         assert res.status_code == 401
         assert res.json == {'info': 'Unauthorized access'}
 
@@ -428,7 +428,7 @@ class TestBlueprintDelivery:
             return table != "users"
 
         mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
-        res = client.put(url_for("delivery.assign_Driver", delivery_id=12, driver_id=2))
+        res = client.put(url_for("delivery.assign_driver", delivery_id=12, driver_id=2))
         assert res.status_code == 404
         assert res.json == {"info": "Driver not found"}
         mocker.stopall()
@@ -446,7 +446,7 @@ class TestBlueprintDelivery:
             return table != "deliveries"
 
         mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
-        res = client.put(url_for("delivery.assign_Driver", delivery_id=12, driver_id=2))
+        res = client.put(url_for("delivery.assign_driver", delivery_id=12, driver_id=2))
         assert res.status_code == 404
         assert res.json == {"info": "Delivery not found"}
         mocker.stopall()
@@ -462,7 +462,7 @@ class TestBlueprintDelivery:
 
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         mocker.patch.object(DBHandler, "update", return_value=True)
-        res = client.put(url_for("delivery.assign_Driver", delivery_id=12, driver_id=2))
+        res = client.put(url_for("delivery.assign_driver", delivery_id=12, driver_id=2))
         assert res.status_code == 200
         assert res.json == {"info": "Driver has been assigned"}
         mocker.stopall()
