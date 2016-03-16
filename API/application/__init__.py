@@ -25,12 +25,6 @@ app.config.update(
     # mail accounts =
     MAIL_DEFAULT_SENDER='contact@romainfanara.com',
 
-    # DB config
-    DB_HOST="127.0.0.1",
-    DB_USER="root",
-    DB_PASSWORD="jf/b6rb",
-    DB_DATABASE="deliveryTracker",
-
     DB_CONFIG={
             "host": "127.0.0.1",
             "user": "root",
@@ -53,7 +47,7 @@ from application.controllers.authenticationController import authentication_blue
 from application.controllers.driverController import driver_blueprint
 from application.controllers.deliveryController import delivery_blueprint
 from application.controllers.vehicleController import vehicle_blueprint
-
+from application.controllers.assignmentController import assignment_blueprint
 
 ### BLUEPRINTS LOADING ###
 app.register_blueprint(customer_blueprint)
@@ -61,6 +55,7 @@ app.register_blueprint(authentication_blueprint)
 app.register_blueprint(vehicle_blueprint)
 app.register_blueprint(driver_blueprint)
 app.register_blueprint(delivery_blueprint)
+app.register_blueprint(assignment_blueprint)
 
 
 
