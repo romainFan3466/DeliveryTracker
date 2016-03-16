@@ -1,11 +1,7 @@
 from flask import url_for
-import pytest_mock
-#from unittest.mock import patch
-import pytest
 from application.core.DBHandler import DBHandler
-from application.classes.Location import Location
 import json
-import datetime
+from decimal import Decimal
 
 
 class TestBlueprintDriver:
@@ -306,8 +302,8 @@ class TestBlueprintDriver:
             "name": "Romain",
             "email": "romain@test.ie",
             "phone": "5464654645",
-            "location_lat": 12.46666,
-            "location_lng": 13.46666
+            "location_lat": Decimal(12.46666),
+            "location_lng": Decimal(13.46666)
         }]
         driver = {
             "id": 2,
@@ -315,8 +311,8 @@ class TestBlueprintDriver:
             "email": "romain@test.ie",
             "phone": "5464654645",
             "location": {
-                "lat": 12.46666,
-                "lng": 13.46666
+                "lat": Decimal(12.46666),
+                "lng": Decimal(13.46666)
             }
         }
 
@@ -328,3 +324,42 @@ class TestBlueprintDriver:
         assert res.json["drivers"][0] == {"driver":driver}
         assert res.status_code == 200
         mocker.stopall()
+
+
+    def test_getAll_with_drivers_return_obj(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
+        _sql = [{
+            "id": 2,
+            "name": "Romain",
+            "email": "romain@test.ie",
+            "phone": "5464654645",
+            "location_lat": Decimal(12.46666),
+            "location_lng": Decimal(13.46666)
+        }]
+        driver = {
+            "id": 2,
+            "name": "Romain",
+            "email": "romain@test.ie",
+            "phone": "5464654645",
+            "location": {
+                "lat": Decimal(12.46666),
+                "lng": Decimal(13.46666)
+            }
+        }
+
+        from application.controllers.driverController import getAll
+        mocker.patch.object(DBHandler, "select", return_value=_sql)
+        res = getAll(return_obj=True)
+        assert "drivers" in res.json
+        assert isinstance(res.json["drivers"], list)
+        assert len(res.json["drivers"]) == 1
+        assert res.json["drivers"][0] == {"driver":driver}
+        assert res.status_code == 200
+        mocker.stopall()
+
