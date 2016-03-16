@@ -52,6 +52,19 @@ class Location:
 
         return geocode
 
+
+    @staticmethod
+    def getDistance(origin, destination):
+        distance = Location.__gmaps.distance_matrix(origins=(origin["lat"],origin["lng"]),
+                                                    destinations=(destination["lat"], destination["lng"]))
+        if "status" in distance and distance["status"] == "OK":
+            result = {}
+            result["distance"] = distance["rows"][0]["elements"][0]["distance"]["value"]
+            result["duration"]= distance["rows"][0]["elements"][0]["duration"]["value"]
+            return result
+        else :
+            raise Exception("Error distance")
+
     @staticmethod
     def isValid(lat:float, lng:float):
         return isinstance(lat, float)  and isinstance(lng, float) and lat>=-90.0 and lat<=90.0 and lng>=-180.0 and lng<=180.0

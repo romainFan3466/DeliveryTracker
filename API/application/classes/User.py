@@ -1,5 +1,5 @@
 from voluptuous import Required, All, Length, Range, Schema, Invalid, MultipleInvalid, ALLOW_EXTRA, REMOVE_EXTRA, Object, Any
-import re
+from application.core.validator import email_validator
 
 class User:
 
@@ -16,15 +16,6 @@ class User:
             return "Unsupported method"
 
 
-    @staticmethod
-    def email_validator():
-        def correct(email):
-            if isinstance(email, str) and len(email) > 7:
-                if re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", email) != None:
-                    return email
-            raise Invalid("value must be an email address")
-        return correct
-
 
     @staticmethod
     def type_validator():
@@ -32,12 +23,13 @@ class User:
             if isinstance(type, str) and type in ["admin", "driver"]:
                 return type
             raise Invalid("value must be 'admin' or 'driver'")
+        return correct
 
 
     def create_parser(self):
         schema  = {
             Required('user'): {
-                Required("email") : self.email_validator(),
+                Required("email") : email_validator,
                 Required("password") : str,
                 Required("type") : self.type_validator()
             }

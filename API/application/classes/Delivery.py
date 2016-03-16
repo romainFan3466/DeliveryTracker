@@ -1,33 +1,62 @@
 from datetime import datetime
 from voluptuous import Required, All, Length, Range, Schema, Invalid, MultipleInvalid, ALLOW_EXTRA, REMOVE_EXTRA, Object, Any
-from flask import jsonify
+from application.core.validator import *
 class Delivery:
 
-    # ID = ""
-    # date_created = ""
-    # date_pickup = ""
-    # date_delivery = ""
-    #
-    # Location_delivery = ""
-    # Location_pickup = ""
-    #
-    # customer_ID = ""
-    # driver_ID = ""
-    #
-    #
-    # def __init__(self,
-    #              ID,
-    #              customer_ID,
-    #              date_created=None,
-    #              date_pickup:datetime=None,
-    #              date_delivery:datetime=None,
-    #              driver_ID=None):
-    #     self.ID = ID
-    #     self.customer_ID = customer_ID
-    #     self.date_created=date_created
-    #     self.date_pickup=date_pickup
-    #     self.date_delivery=date_delivery
-    #     self.driver_ID=driver_ID
+
+    def __init__(self, data=None):
+        schema = {
+            Required("id"): All(int, Range(min=0)),
+            Required("customer_id"): All(int, Range(min=0)),
+            Required("sender_id"): All(int, Range(min=0)),
+            Required("receiver_id"): All(int, Range(min=0)),
+            Required("date_created"): date_validator,
+            Required("date_due"): date_validator,
+            Required("date_pickup"): date_validator,
+            Required("date_delivery"): date_validator,
+            Required("weight"): weight_validator(),
+            Required("area"): area_validator(),
+            Required("content"): str,
+            Required("canceled"): All(int, Range(min=0, max=1)),
+            Required("state") : self.state_validator,
+            Required("driver_id"): id_validator,
+            "info": str,
+            "sender_lat" : All(Any(float, Decimal), Range(min=-90.0, max=90.0)),
+            "sender_lng" : All(Any(float, Decimal), Range(min=-180.0, max=180.0)),
+            "receiver_lat" : All(Any(float, Decimal), Range(min=-90.0, max=90.0)),
+            "receiver_lng" : All(Any(float, Decimal), Range(min=-180.0, max=180.0))
+        }
+        parser = Schema(schema, extra=REMOVE_EXTRA)
+
+        if data:
+            obj = parser(data)
+            for k,v in obj.items():
+                if k == "canceled":
+                    setattr(self,k, v!=0)
+                else:
+                    setattr(self,k,v)
+
+
+    def to_dict(self):
+        d = self.__dict__.copy()
+        d["date_pickup"] = self.date_pickup.strftime("%Y-%m-%d %H:%M:%S") if hasattr(self,"date_pickup") and self.date_pickup is not None else None
+        d["date_delivery"] = self.date_delivery.strftime("%Y-%m-%d %H:%M:%S") if hasattr(self,"date_delivery") and self.date_delivery is not None  else None
+        d["date_due"] = self.date_due.strftime("%Y-%m-%d %H:%M:%S") if hasattr(self,"date_due") and self.date_due is not None else None
+        d["date_created"] = self.date_created.strftime("%Y-%m-%d %H:%M:%S") if hasattr(self,"date_created") and self.date_created is not None else None
+        return d
+
+    def getReceiverLocation(self):
+        return {"lat" : float(self.receiver_lat), "lng": float(self.receiver_lng)}
+
+    def getSenderLocation(self):
+        return {"lat" : float(self.sender_lat), "lng": float(self.sender_lng)}
+
+
+    def get_area(self):
+        return self.area if hasattr(self, "area") else None
+
+    def get_weight(self):
+        return self.weight if hasattr(self, "weight") else None
 
     @staticmethod
     def parse(data:dict, method:str):
@@ -41,46 +70,24 @@ class Delivery:
                 return {"errors" : errors_name}
             return "Unsupported method"
 
-    def date_validator(self, format="%Y-%m-%d %H:%M:%S"):
-        return lambda v: datetime.strptime(v, format)
 
+    def state_validator(self, state):
+        supported_states = ["not taken", "taken", "picked up", "on way", "delivered", "canceled"]
+        if state in supported_states:
+            return state
+        else:
+            raise Invalid("Unsupported state")
 
-    def weight_validator(self):
-        def correct(weight):
-            if (isinstance(weight, float) or isinstance(weight, int)) and weight < 36000 and weight > 0:
-                return weight
-            else:
-                raise Invalid("value must be int or float between 0 and 36000")
-        return correct
-
-
-    def area_validator(self):
-        def correct(area):
-            if(isinstance(area, float) or isinstance(area, int)) and area < 50 and area > 0:
-                return area
-            else:
-                raise Invalid("value must be int or float between 0 and 50")
-        return correct
-
-
-    def state_validator(self):
-        def correct(state):
-            supported_states = ["not taken", "taken", "picked up", "on way", "delivered", "canceled"]
-            if state in supported_states:
-                return state
-            else:
-                raise Invalid("Unsupported state")
-        return correct
 
 
     def create_parser(self):
         schema  = {
             Required('delivery'): {
                 Required("customer_id") : All(int, Range(min=0)),
-                Required("date_created") : self.date_validator(),
-                Required("date_due") : self.date_validator(),
-                Required("weight") : self.weight_validator(),
-                Required("area") : self.area_validator(),
+                Required("date_created") : date_validator,
+                Required("date_due") : date_validator,
+                Required("weight") : weight_validator(),
+                Required("area") : area_validator(),
                 Required("content") : str,
                 Required("sender_id"): All(int, Range(min=0)),
                 Required("receiver_id"): All(int, Range(min=0)),
@@ -90,16 +97,15 @@ class Delivery:
         return Schema(schema, extra=REMOVE_EXTRA)
 
 
-
     def update_parser(self):
         schema  = {
             Required('delivery'): {
                 "customer_id" : All(int, Range(min=0)),
-                "date_pickup" : self.date_validator(),
-                "date_delivery" : self.date_validator(),
-                "date_due" : self.date_validator(),
-                "weight" : self.weight_validator(),
-                "area" : self.area_validator(),
+                "date_pickup" : date_validator,
+                "date_delivery" : date_validator,
+                "date_due" : date_validator,
+                "weight" : weight_validator(),
+                "area" : area_validator(),
                 "content" : str,
                 "sender_id" : All(int, Range(min=0)),
                 "receiver_id" : All(int, Range(min=0)),
@@ -108,21 +114,34 @@ class Delivery:
         }
         return Schema(schema, extra=REMOVE_EXTRA)
 
+
     def getAll_parser(self):
         schema  = {
             'conditions': {
                 "customer_id" : All(int, Range(min=0)),
-                "start" : self.date_validator(),
-                "end" : self.date_validator()
-
+                "start" : date_validator,
+                "end" : date_validator,
+                "state" : self.state_validator
             }
         }
         return Schema(schema, extra=REMOVE_EXTRA)
 
+    def get_all_unassigned_parser(self):
+        schema = {
+            "customer_id": All(int, Range(min=0)),
+            "start": date_validator,
+            "end": date_validator,
+            "state" : self.state_validator
+        }
+
+        return Schema(schema, extra=REMOVE_EXTRA)
+
     def update_state_parser(self):
         schema  = {
-                Required("state") : self.state_validator(),
+                Required("state") : self.state_validator,
                 Required("delivery_id") : All(int, Range(min=0))
         }
 
         return Schema(schema, extra=REMOVE_EXTRA)
+
+
