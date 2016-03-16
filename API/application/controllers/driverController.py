@@ -41,7 +41,6 @@ def create():
     return jsonify(info="Driver created successfully", driverId=driverId, password=pwd),200
    
 
-
 @driver_blueprint.route("/api/drivers/<id>", methods=['PUT'])
 @sessionDecorator.required_user("admin")
 def update(id:int):
@@ -76,6 +75,39 @@ def update(id:int):
     return jsonify(info="Driver updated successfully"),200
 
 
+@driver_blueprint.route("/api/drivers/<driver_id>/vehicles/1/<vehicle1_id>", methods=['PUT'])
+@driver_blueprint.route("/api/drivers/<driver_id>/vehicles/1/<vehicle1_id>/2/<vehicle2_id>", methods=['PUT'])
+@sessionDecorator.required_user("admin")
+def set_vehicle(driver_id:int, vehicle1_id:int, vehicle2_id:int=None):
+    company_id = session["user"]["company_id"]
+    driver = db.select(table="users", selected_columns=("id","vehicle_id_1","vehicle_id_2"),
+                     conditions={"id":driver_id, "type":"driver", "company_id": company_id}, multiple=False)
+    if driver is None:
+        return jsonify(info="Driver not found"), 404
+
+    assigned_vehicle1_by = db.select(table="vehicles", selected_columns=("id","driver_id"), conditions={"id":vehicle1_id, "company_id": company_id}, multiple=False)
+    driver_vehicles = [driver["vehicle_id_1"], driver["vehicle_id_2"]]
+    assigned_vehicle = []
+    assigned_vehicle.append(assigned_vehicle1_by)
+    if vehicle2_id is not None:
+        assigned_vehicle2_by = db.select(table="vehicles", selected_columns=("id","driver_id"), conditions={"id":vehicle2_id, "company_id": company_id}, multiple=False)
+        assigned_vehicle.append(assigned_vehicle2_by)
+
+    for i, v in enumerate(assigned_vehicle, start=1):
+
+        if "driver_id" in v and v["driver_id"] != "" and v["driver_id"] is not None and not v["id"] in driver_vehicles:
+            return jsonify(info="Vehicle with id: "+ str(v["id"]) + " already taken"), 404
+        else:
+            if "vehicle_id_"+str(i) in driver:
+                db.update(table="vehicles", params={"driver_id": None }, conditions={"id": driver["vehicle_id_"+str(i)]})
+
+            db.update(table="vehicles", params={"driver_id": driver_id}, conditions={"id": v["id"]})
+            db.update(table="users", conditions={"id":driver_id, "type":"driver", "company_id": company_id},
+                      params={"vehicle_id_"+str(i): v["id"]})
+
+    return jsonify(info="Driver updated successfully"),200
+
+
 @driver_blueprint.route("/api/drivers/<id>", methods=['DELETE'])
 @sessionDecorator.required_user("admin")
 def delete(id:int):
@@ -105,37 +137,61 @@ def get(id:int):
         "location": {
             "lat": d["location_lat"],
             "lng": d["location_lng"]
-        }
+        },
+        "vehicle_id_1":d["vehicle_id_1"],
+        "vehicle_id_2":d["vehicle_id_2"]
     }
     return jsonify(driver=driver),200
 
 
-@driver_blueprint.route("/api/drivers/all", methods=['GET'])
 @sessionDecorator.required_user("admin")
-def getAll():
+def get_all_drivers(return_obj=False, vehicles=False):
+    _sql = """
+            select users.id,
+            users.name,
+            users.location_lat,
+            users.location_lng,
+            users.vehicle_id_1,
+            users.vehicle_id_2,
+         v1.max_area AS v1_max_area,
+         v1.max_weight AS v1_max_weight,
+         v1.area AS v1_area,
+         v1.weight AS v1_weight,
+         v2.max_area AS v2_max_area,
+         v2.max_weight AS v2_max_weight,
+         v2.area AS v2_area,
+         v2.weight AS v2_weight
+         from users
+        INNER JOIN vehicles AS v1
+        ON users.vehicle_id_1 = v1.id
+        LEFT JOIN vehicles AS v2
+        ON users.vehicle_id_2 = v2.id
+        WHERE users.type='driver' and users.company_id = %(company_id)s ;
+        """
     company_id = session["user"]["company_id"]
-    drivers_raw= db.select(table="users", conditions={"type":"driver", "company_id": company_id}, multiple=True)
-
-    if len(drivers_raw) <1:
-        return jsonify(drivers=drivers_raw), 200
+    if vehicles is True:
+        drivers_raw = db.query(_sql, {"company_id" : company_id}, multiple=True)
+    else :
+        drivers_raw= db.select(table="users", conditions={"type":"driver", "company_id": company_id}, multiple=True)
 
     drivers = []
-    for driver in drivers_raw:
-        d = {
-            "driver": {
-                "id": driver["id"],
-                "name": driver["name"],
-                "phone": driver["phone"],
-                "email": driver["email"],
-                "location": {
-                    "lat": driver["location_lat"],
-                    "lng": driver["location_lng"],
-                }
-            }
-        }
-        drivers.append(d)
-    return jsonify(drivers=drivers),200
+    if return_obj:
+        for driver in drivers_raw:
+            drivers.append(Driver(driver))
 
+    else :
+        for driver in drivers_raw:
+            d = {"driver": Driver(driver).__dict__}
+            drivers.append(d)
+
+    return drivers
+
+
+@driver_blueprint.route("/api/drivers/all", methods=['GET'])
+@sessionDecorator.required_user("admin")
+def getAll(return_obj=False):
+    drivers = get_all_drivers()
+    return jsonify(drivers=drivers),200
 
 
 @driver_blueprint.route("/api/drivers/location", methods=['PUT'])
