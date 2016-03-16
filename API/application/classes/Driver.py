@@ -1,12 +1,13 @@
 from voluptuous import Required, All, Length, Range, Schema, Invalid, MultipleInvalid, ALLOW_EXTRA, REMOVE_EXTRA, Object, Any, Coerce
 from application.core.validator import *
 from decimal import *
+import re
 from application.classes.Vehicle import Vehicle
 class Driver():
 
     # currentLocation = ""
 
-    def __init__(self, data=None):
+    def     __init__(self, data=None):
         schema  = {
             Required("id") : All(int, Range(min=0)),
             Required("name") : All(str, Length(min=3)),
@@ -34,17 +35,20 @@ class Driver():
                     if not hasattr(self, "location"):
                         self.location = {}
                     self.location[k[-3:]] = v
-                elif k[0] ==  "v" and k[2:] == "_area" and obj["vehicle_id_"+k[1]] is not None:
-                    ve = {
-                        "id" : obj["vehicle_id_"+k[1]],
-                        "registration" : "",
-                        "type" : "",
-                        "area" : obj["v"+k[1]+"_area"],
-                        "weight" : obj["v"+k[1]+"_weight"],
-                        "max_area" : obj["v"+k[1]+"_max_area"],
-                        "max_weight" : obj["v"+k[1]+"_max_weight"],
-                    }
-                    setattr(self, "v"+k[1], Vehicle(ve))
+                elif re.match(r'vehicle_id_[12]', k):
+                    if "v" + k[-1] +"_area" in obj:
+                        ve = {
+                            "id" : obj["vehicle_id_"+k[-1]],
+                            "registration" : "",
+                            "type" : "",
+                            "area" : obj["v"+k[-1]+"_area"],
+                            "weight" : obj["v"+k[-1]+"_weight"],
+                            "max_area" : obj["v"+k[-1]+"_max_area"],
+                            "max_weight" : obj["v"+k[-1]+"_max_weight"],
+                        }
+                        setattr(self, "v"+k[-1], Vehicle(ve))
+                    else:
+                        setattr(self,k,v)
                 else:
                     setattr(self,k,v) if not k[0]=="v" else None
 
