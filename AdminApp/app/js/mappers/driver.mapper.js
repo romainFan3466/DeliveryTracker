@@ -1,7 +1,7 @@
 AppModule.factory('DriverMapper',
     function () {
 
-         var args  = ["id", "name", "email", "phone" , "location" ];
+         var args  = ["id", "name", "email", "phone" , "location", "vehicleId1", "vehicleId2" ];
 
 
         var DriverMapper = function(data, restrict){
@@ -14,6 +14,8 @@ AppModule.factory('DriverMapper',
                     lat : "",
                     lng : ""
                 };
+                this.vehicleId1 = "";
+                this.vehicleId2 = "";
             }
             if (angular.isDefined(data)) {
                 this.parse(data, restrict);
@@ -23,9 +25,9 @@ AppModule.factory('DriverMapper',
         DriverMapper.prototype.parse= function(data, restrict){
             if (data) {
                 var self = this;
-
                 if(restrict === true){
                     angular.forEach(data, function (value, key) {
+                        key = humps.camelize(key);
                         if(args.indexOf(key) != -1){
                             if(key == "location" && angular.isDefined(value.lat) && angular.isDefined(value.lng)){
                                 self[key] = {

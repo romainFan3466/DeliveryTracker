@@ -33,6 +33,20 @@ AppModule.factory('$driver', [
         };
 
 
+        var _setVehicle = function (id, v1Id, v2Id) {
+            var deferred = $q.defer();
+            $http
+                .put(Config.baseUrl + "/drivers/" + id + "/vehicles", {vehicles : {v1 : v1Id, v2:v2Id}})
+                .success(function (res) {
+                    deferred.resolve();
+                })
+                .error(function (res) {
+                    deferred.reject(res);
+                });
+            return deferred.promise
+        };
+
+
         var _delete = function (id) {
             var deferred = $q.defer();
             $http
@@ -82,13 +96,12 @@ AppModule.factory('$driver', [
 
 
 
-
-
         return {
             create: _create,
             update: _update,
             get: _get,
-            getAll: _getAll
+            getAll: _getAll,
+            setVehicle : _setVehicle
         }
 
     }
