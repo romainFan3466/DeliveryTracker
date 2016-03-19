@@ -52,13 +52,15 @@ class DBHandler:
 
 
 
-    def query(self, sql:str, params:dict=None, multiple=True):
+    def query(self, sql:str, params:dict=None, multiple=True, fetch=True):
         try:
             self.conn = mysql.connector.connect(**self.config)
             self.cursor = self.conn.cursor(dictionary=True)
             self.cursor.execute(sql, params)
 
-            rows = self.cursor.fetchall() if multiple is True else self.cursor.fetchone()
+            rows = []
+            if fetch is True:
+                rows = self.cursor.fetchall() if multiple is True else self.cursor.fetchone()
 
             self.cursor.close()
             self.conn.commit()
