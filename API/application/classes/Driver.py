@@ -15,7 +15,7 @@ class Driver():
             "phone" : str,
             Required("location_lat"): All(Any(float, Decimal), Range(min=-90.0, max=90.0)),
             Required("location_lng"): All(Any(float, Decimal), Range(min=-180.0, max=180.0)),
-            "vehicle_id_1" : All(int, Range(min=0)),
+            "vehicle_id_1" : id_validator,
             "vehicle_id_2": id_validator,
             "v1_area": area_validator(nullable=True),
             "v1_max_area": area_validator(),
@@ -114,6 +114,16 @@ class Driver():
                 Required("name") : All(str, Length(min=3)),
                 Required("email") : email_validator,
                 Required("phone") : str
+            }
+        }
+        return Schema(schema, extra=REMOVE_EXTRA)
+
+
+    def set_vehicle_parser(self):
+        schema  = {
+            Required('vehicles'): {
+                Required("v1") : id_validator,
+                Required("v2") : id_validator
             }
         }
         return Schema(schema, extra=REMOVE_EXTRA)

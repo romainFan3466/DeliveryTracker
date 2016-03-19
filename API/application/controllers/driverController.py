@@ -75,37 +75,65 @@ def update(id:int):
     return jsonify(info="Driver updated successfully"),200
 
 
-@driver_blueprint.route("/api/drivers/<driver_id>/vehicles/1/<vehicle1_id>", methods=['PUT'])
-@driver_blueprint.route("/api/drivers/<driver_id>/vehicles/1/<vehicle1_id>/2/<vehicle2_id>", methods=['PUT'])
+@driver_blueprint.route("/api/drivers/<driver_id>/vehicles", methods=['PUT'])
 @sessionDecorator.required_user("admin")
-def set_vehicle(driver_id:int, vehicle1_id:int, vehicle2_id:int=None):
+def set_vehicle(driver_id:int):
+
+    def reset_vehicle(index, driver_id):
+        _sql = """
+                  UPDATE vehicles
+                  SET vehicles.driver_id = NULL
+                  WHERE vehicles.id = (
+                    SELECT users.vehicle_id_""" + str(index) +"""
+                    FROM users
+                    WHERE users.id = %(id)s );
+                """
+        db.query(_sql, params={"id" : driver_id}, fetch=False)
+
+
     company_id = session["user"]["company_id"]
-    driver = db.select(table="users", selected_columns=("id","vehicle_id_1","vehicle_id_2"),
-                     conditions={"id":driver_id, "type":"driver", "company_id": company_id}, multiple=False)
-    if driver is None:
+    if not db.is_existing(table="users",conditions={"id":driver_id, "type":"driver", "company_id": company_id}):
         return jsonify(info="Driver not found"), 404
 
-    assigned_vehicle1_by = db.select(table="vehicles", selected_columns=("id","driver_id"), conditions={"id":vehicle1_id, "company_id": company_id}, multiple=False)
-    driver_vehicles = [driver["vehicle_id_1"], driver["vehicle_id_2"]]
-    assigned_vehicle = []
-    assigned_vehicle.append(assigned_vehicle1_by)
-    if vehicle2_id is not None:
-        assigned_vehicle2_by = db.select(table="vehicles", selected_columns=("id","driver_id"), conditions={"id":vehicle2_id, "company_id": company_id}, multiple=False)
-        assigned_vehicle.append(assigned_vehicle2_by)
+    vehicles = request.get_json(force=True)
+    vehicles = Driver.parse(vehicles, "set_vehicle")
 
-    for i, v in enumerate(assigned_vehicle, start=1):
+    if "errors" in vehicles:
+        return jsonify(errors=vehicles["errors"]),400
 
-        if "driver_id" in v and v["driver_id"] != "" and v["driver_id"] is not None and not v["id"] in driver_vehicles:
-            return jsonify(info="Vehicle with id: "+ str(v["id"]) + " already taken"), 404
-        else:
-            if "vehicle_id_"+str(i) in driver:
-                db.update(table="vehicles", params={"driver_id": None }, conditions={"id": driver["vehicle_id_"+str(i)]})
+    vehicles = vehicles["vehicles"]
 
-            db.update(table="vehicles", params={"driver_id": driver_id}, conditions={"id": v["id"]})
-            db.update(table="users", conditions={"id":driver_id, "type":"driver", "company_id": company_id},
-                      params={"vehicle_id_"+str(i): v["id"]})
 
-    return jsonify(info="Driver updated successfully"),200
+    for k,v in vehicles.items():
+
+        if v is not None:
+
+            if not db.is_existing(table="vehicles", conditions={"company_id": company_id, "id":v}):
+                return jsonify(info="Vehicle " + str(k) + " not found"), 404
+
+            _sql = """ SELECT 1 FROM vehicles WHERE company_id=%(company_id)s AND id= %(v_id)s AND (driver_id IS NULL OR driver_id=%(id)s); """
+
+            # if wished vehicle is available
+            if db.query(_sql,params={"company_id" : company_id, "id": driver_id, "v_id" : v}, multiple=False) is not None:
+
+                # reset old vehicle
+                reset_vehicle(k[1], driver_id)
+
+                # update vehicle
+                db.update(table="vehicles", params={"driver_id": driver_id}, conditions={"id":v})
+
+            else :
+                return jsonify(info="Vehicle " + str(k) + " already taken"), 400
+
+        else :
+            # reset old vehicle
+            reset_vehicle(k[1], driver_id)
+
+        # update user
+        db.update(table="users", params={"vehicle_id_"+k[1]: v}, conditions={"id" : driver_id})
+
+    return jsonify(info="Vehicles set successfully"), 200
+
 
 
 @driver_blueprint.route("/api/drivers/<id>", methods=['DELETE'])
