@@ -5,10 +5,9 @@ import pytest_mock
 import pytest
 from application.core.DBHandler import DBHandler
 from werkzeug.datastructures import FileStorage
-from application.classes.Location import Location
-import json
-import datetime
-import os
+from application.controllers.deliveryController import get_all_deliveries
+from application.classes.Delivery import Delivery
+import json, datetime, os
 
 
 class TestBlueprintDelivery:
@@ -49,7 +48,7 @@ class TestBlueprintDelivery:
         assert res.status_code == 400
 
 
-    def test_create_with_wrong_customer_receiver_sender_id(self, client, mocker):
+    def test_create_with_wrong_customer_id(self, client, mocker):
         with client.session_transaction() as sess:
             sess["user"]= {
                 "id" : 3,
@@ -57,11 +56,55 @@ class TestBlueprintDelivery:
                 "company_id": 2
         }
 
-        mocker.patch.object(DBHandler, "is_existing", return_value=False)
+        def is_existing(table, conditions, **kwargs):
+            return table == "deliveries" or (table=="customers" and "id" in conditions and conditions["id"] != self.delivery["delivery"]["customer_id"])
+
+        mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
         res = client.post(url_for("delivery.create"), data=json.dumps(self.delivery), content_type='application/json')
         assert res.status_code == 404
         assert res.json == {"info": "Customer not found"}
         mocker.stopall()
+
+
+    def test_create_with_wrong_sender_id(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
+        def is_existing(table, conditions, **kwargs):
+            return table == "deliveries" or (
+            table == "customers" and "id" in conditions and conditions["id"] != self.delivery["delivery"][
+                "sender_id"])
+
+        mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
+        res = client.post(url_for("delivery.create"), data=json.dumps(self.delivery), content_type='application/json')
+        assert res.status_code == 404
+        assert res.json == {"info": "Sender not found"}
+        mocker.stopall()
+
+
+    def test_create_with_wrong_receiver_id(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
+        def is_existing(table, conditions, **kwargs):
+            return table == "deliveries" or (
+            table == "customers" and "id" in conditions and conditions["id"] != self.delivery["delivery"][
+                "receiver_id"])
+
+        mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
+        res = client.post(url_for("delivery.create"), data=json.dumps(self.delivery), content_type='application/json')
+        assert res.status_code == 404
+        assert res.json == {"info": "Receiver not found"}
+        mocker.stopall()
+
 
     def test_create_with_wrong_date_format(self, client, mocker):
         with client.session_transaction() as sess:
@@ -104,7 +147,6 @@ class TestBlueprintDelivery:
         mocker.stopall()
 
 
-
 ############### UPDATE #####################
     def test_update_unauthorized(self, client, mocker):
         res = client.put(url_for("delivery.update", id=12))
@@ -120,7 +162,7 @@ class TestBlueprintDelivery:
                 "type": "admin",
                 "company_id": 2
         }
-        mocker.patch.object(DBHandler, "is_existing", return_value=False)
+        mocker.patch.object(DBHandler, "select", return_value=None)
         res = client.put(url_for("delivery.update", id=12))
         assert res.status_code == 404
         assert res.json == {"info" : "Delivery not found"}
@@ -134,13 +176,13 @@ class TestBlueprintDelivery:
                 "type": "admin",
                 "company_id": 2
         }
-        mocker.patch.object(DBHandler, "is_existing", return_value=True)
+        mocker.patch.object(DBHandler, "select", return_value=True)
         res = client.put(url_for("delivery.update", id=12),  data=json.dumps({}), content_type='application/json')
         assert res.status_code == 400
         mocker.stopall()
     
 
-    def test_update_with_wrong_customer_sender_receiver(self, client, mocker):
+    def test_update_with_wrong_customer(self, client, mocker):
         with client.session_transaction() as sess:
             sess["user"]= {
                 "id" : 3,
@@ -153,9 +195,10 @@ class TestBlueprintDelivery:
         
         wrong_delivery = {
             "delivery":{
-                "customer_id" : 2
+                "customer_id" : 2,
             }
-        }    
+        }
+        mocker.patch.object(DBHandler, "select", return_value=True)
         mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
         res = client.put(url_for("delivery.update", id=12),  data=json.dumps(wrong_delivery), content_type='application/json')
         assert res.status_code == 404
@@ -163,11 +206,7 @@ class TestBlueprintDelivery:
         mocker.stopall()
 
 
-
-
-
-
-    def test_update_wrong_date_format(self, client, mocker):
+    def test_update_with_wrong_sender(self, client, mocker):
         with client.session_transaction() as sess:
             sess["user"]= {
                 "id" : 3,
@@ -175,24 +214,45 @@ class TestBlueprintDelivery:
                 "company_id": 2
         }
 
-        _delivery = {
+        def is_existing(table, conditions, **kwargs):
+            return table == "deliveries"
+
+        wrong_delivery = {
             "delivery":{
-                 "sender_id": 5,
-                "receiver_id": 3,
-                "customer_id": 12,
-                "date_created": '2015-11-30 17:23:09',
-                "weight": 356,
-                "area": 2.4,
-                "content": "fish",
-                "date_due" : "13/12/2015",
+                "sender_id" : 2,
             }
         }
-        mocker.patch.object(DBHandler, "is_existing", return_value=True)
-        res = client.put(url_for("delivery.update", id=12),  data=json.dumps(_delivery), content_type='application/json')
-        assert res.status_code == 400
+        mocker.patch.object(DBHandler, "select", return_value=True)
+        mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
+        res = client.put(url_for("delivery.update", id=12),  data=json.dumps(wrong_delivery), content_type='application/json')
+        assert res.status_code == 404
+        assert res.json == {"info" : "Sender not found"}
         mocker.stopall()
 
-    
+
+    def test_update_with_wrong_receiver(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"]= {
+                "id" : 3,
+                "type": "admin",
+                "company_id": 2
+        }
+
+        def is_existing(table, conditions, **kwargs):
+            return table == "deliveries"
+
+        wrong_delivery = {
+            "delivery":{
+                "receiver_id" : 2,
+            }
+        }
+        mocker.patch.object(DBHandler, "select", return_value=True)
+        mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
+        res = client.put(url_for("delivery.update", id=12),  data=json.dumps(wrong_delivery), content_type='application/json')
+        assert res.status_code == 404
+        assert res.json == {"info" : "Receiver not found"}
+        mocker.stopall()
+
 
     def test_update_with_success(self, client, mocker):
         with client.session_transaction() as sess:
@@ -202,9 +262,21 @@ class TestBlueprintDelivery:
                 "company_id": 2
         }
 
+        d= {"id" : 12, "driver_id" : 5}
 
+        def _select(table, **kwargs):
+            return d if table=="deliveries" else {"MAX(num_order)" : 3}
+        def _insert(table, params, **kwargs):
+            assert table == "delivery_orders"
+            assert "num_order" in params
+            assert params["num_order"] == 4
+            return True
+
+        mocker.patch.object(DBHandler, "select", side_effect=_select)
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
         mocker.patch.object(DBHandler, "update", return_value=True)
+        mocker.patch.object(DBHandler, "insert", side_effect=_insert)
+        mocker.patch.object(DBHandler, "delete", return_value=True)
         res = client.put(url_for("delivery.update", id=12),  data=json.dumps(self.delivery), content_type='application/json')
         assert res.status_code == 200
         assert res.json == {"info" : "Delivery updated successfully"}
@@ -232,7 +304,6 @@ class TestBlueprintDelivery:
         assert res.status_code == 404
         assert res.json == {"info" : "Delivery not found"}
         mocker.stopall()
-
 
 
     def test_delete_with_success(self, client, mocker):
@@ -276,7 +347,7 @@ class TestBlueprintDelivery:
         with client.session_transaction() as sess:
             sess["user"]= {
                 "id" : 3,
-                "type": "admin",
+                "type": "driver",
                 "company_id": 2
         }
         delivery_sql = {
@@ -323,12 +394,25 @@ class TestBlueprintDelivery:
         assert res.json["delivery"] == expected_delivery["delivery"]
         mocker.stopall()
 
-############## GET ALL ######################## TODO : uncompleted
+############## GET ALL ########################
 
     def test_get_all_unauthorized(self, client, mocker):
         res = client.post(url_for("delivery.getAll"))
         assert res.status_code == 401
         assert res.json == {'info': 'Unauthorized access'}
+
+
+    def test_get_all_with_wrong_cond(self, client):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        cond = {"conditions": {"start": "no_date"}}
+        res = client.post(url_for("delivery.getAll"), data=json.dumps(cond), content_type='application/json')
+        assert res.status_code == 400
+        assert "errors" in res.json
 
 
     def test_get_all_with_no_recorded_delivery(self, client, mocker):
@@ -346,6 +430,7 @@ class TestBlueprintDelivery:
         assert isinstance(res.json["deliveries"], list)
         assert len(res.json["deliveries"]) == 0
         mocker.stopall()
+
 
 
     def test_get_all_with_success(self, client, mocker):
@@ -398,13 +483,93 @@ class TestBlueprintDelivery:
                 }
             ]
         }
-        cond= {"conditions" : {}}
+        cond= {
+            "conditions" : {
+                "start" : "2016-04-02 00:00:00",
+                "end" : "2016-04-04 00:00:00",
+                "state" : "not taken",
+                "customer_id" : 34
+                }
+        }
+
         mocker.patch.object(DBHandler, "query", return_value=delivery_sql)
-        res = client.post(url_for("delivery.getAll"),data=json.dumps(cond), content_type='application/json')
+        res = client.post(url_for("delivery.getAll"), data=json.dumps(cond), content_type='application/json')
         assert res.status_code == 200
         assert "deliveries" in res.json
         assert isinstance(res.json["deliveries"], list)
         assert res.json["deliveries"] == expected_delivery["deliveries"]
+        mocker.stopall()
+
+
+    def test_get_all_with_success_obj_location(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"]= {
+                "id" : 3,
+                "type": "driver",
+                "company_id": 2
+        }
+        delivery_sql = [{
+            "id" : 2,
+            "customer_id" : 34,
+            "driver_id" : 5,
+            "date_pickup" : datetime.datetime.strptime('2015-11-30 17:23:09', "%Y-%m-%d %H:%M:%S"),
+            "date_delivery" : datetime.datetime.strptime('2015-11-30 17:23:10', "%Y-%m-%d %H:%M:%S"),
+            "date_created" : datetime.datetime.strptime('2015-10-30 19:23:10', "%Y-%m-%d %H:%M:%S"),
+            "date_due" : datetime.datetime.strptime('2015-11-30 16:23:10', "%Y-%m-%d %H:%M:%S"),
+            "weight": 12,
+            "area": 10.1,
+            "content": "fish",
+            "sender_id": 2,
+            "receiver_id": 3,
+            "info": "",
+            "canceled" : 0,
+            "state" : "not taken",
+            "customer_name": "my_customer",
+            "sender_lat": 45.34,
+            "sender_lng": 102.21,
+            "receiver_lat": -12.21,
+            "receiver_lng": -135.78
+        }]
+
+        expected_delivery = {
+                        "id": 2,
+                        "customer_id": 34,
+                        "driver_id": 5,
+                        "date_pickup": '2015-11-30 17:23:09',
+                        "date_delivery": '2015-11-30 17:23:10',
+                        "date_created": '2015-10-30 19:23:10',
+                        "date_due": '2015-11-30 16:23:10',
+                        "weight": 12,
+                        "area": 10.1,
+                        "content": "fish",
+                        "sender_id": 2,
+                        "receiver_id": 3,
+                        "info": "",
+                        "canceled": False,
+                        "state": "not taken",
+                        "customer_name": "my_customer",
+                        "sender_lat": 45.34,
+                        "sender_lng": 102.21,
+                        "receiver_lat": -12.21,
+                        "receiver_lng": -135.78
+        }
+
+        expected_obj = Delivery(expected_delivery)
+
+        cond= {
+            "conditions" : {
+                "start" : "2016-04-02 00:00:00",
+                "end" : "2016-04-04 00:00:00",
+                "state" : "not taken"
+                }
+        }
+
+        mocker.patch.object(DBHandler, "query", return_value=delivery_sql)
+        res = get_all_deliveries(company_id=2, conditions=cond, return_obj=True, get_locations=True, driver_id=3)
+        assert isinstance(res, list)
+        assert len(res) == 1
+        assert isinstance(res[0], Delivery)
+        assert res[0] == expected_obj
         mocker.stopall()
 
 
@@ -445,10 +610,11 @@ class TestBlueprintDelivery:
         def is_existing(table, **kwargs):
             return table != "deliveries"
 
-        mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
+        mocker.patch.object(DBHandler, "is_existing", return_value=True)
+        mocker.patch.object(DBHandler, "query", return_value=None)
         res = client.put(url_for("delivery.assign_driver", delivery_id=12, driver_id=2))
         assert res.status_code == 404
-        assert res.json == {"info": "Delivery not found"}
+        assert res.json == {"info": "Delivery not found or not assignable"}
         mocker.stopall()
 
 
@@ -459,9 +625,12 @@ class TestBlueprintDelivery:
                 "type": "admin",
                 "company_id": 2
             }
-
+        # mocker.patch("application.controllers.deliveryController.insert_at_last_order", return_value=True)
         mocker.patch.object(DBHandler, "is_existing", return_value=True)
+        mocker.patch.object(DBHandler, "select", return_value={"MAX(num_order)" : 3})
+        mocker.patch.object(DBHandler, "insert", return_value=True)
         mocker.patch.object(DBHandler, "update", return_value=True)
+        mocker.patch.object(DBHandler, "query", return_value={"date_due" : 34})
         res = client.put(url_for("delivery.assign_driver", delivery_id=12, driver_id=2))
         assert res.status_code == 200
         assert res.json == {"info": "Driver has been assigned"}
@@ -604,5 +773,74 @@ class TestBlueprintDelivery:
         assert res.content_type == "image/png"
         mocker.stopall()
 
+
 ############## UPDATE STATE ########################
+
+    def test_update_state_unauthorized(self, client, mocker):
+        res = client.put(url_for("delivery.update_state"))
+        assert res.status_code == 401
+        assert res.json == {'info': 'Unauthorized access'}
+
+
+    def test_update_state_with_wrong_payload(self, client):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        data = {"state" :"not a state","delivery_id" : 34 }
+        res = client.put(url_for("delivery.update_state"), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 400
+        assert "errors" in res.json
+
+
+    def test_update_state_with_wrong_delivery_id(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
+        mocker.patch.object(DBHandler, "is_existing", return_value=False)
+        data = {"state" :"taken","delivery_id" : 34 }
+        res = client.put(url_for("delivery.update_state"), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 404
+        assert res.json == {"info": "Delivery not found"}
+        mocker.stopall()
+
+
+    def test_update_state_with_success_canceled(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "driver",
+                "company_id": 2
+            }
+
+        mocker.patch.object(DBHandler, "is_existing", return_value=True)
+        mocker.patch.object(DBHandler, "update", return_value=True)
+        data = {"state" :"canceled","delivery_id" : 34 }
+        res = client.put(url_for("delivery.update_state"), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 200
+        mocker.stopall()
+
+
+    def test_update_state_with_success(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "driver",
+                "company_id": 2
+            }
+
+        mocker.patch.object(DBHandler, "is_existing", return_value=True)
+        mocker.patch.object(DBHandler, "update", return_value=True)
+        data = {"state" :"taken","delivery_id" : 34 }
+        res = client.put(url_for("delivery.update_state"), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 200
+        mocker.stopall()
+
+
 

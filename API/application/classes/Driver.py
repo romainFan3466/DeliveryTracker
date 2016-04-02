@@ -35,8 +35,8 @@ class Driver():
                     if not hasattr(self, "location"):
                         self.location = {}
                     self.location[k[-3:]] = v
-                elif re.match(r'vehicle_id_[12]', k):
-                    if "v" + k[-1] +"_area" in obj:
+                elif re.match(r'vehicle_id_[12]', k) :
+                    if v is not None and "v" + k[-1] +"_area" in obj:
                         ve = {
                             "id" : obj["vehicle_id_"+k[-1]],
                             "registration" : "",
@@ -52,13 +52,32 @@ class Driver():
                 else:
                     setattr(self,k,v) if not k[0]=="v" else None
 
+    def to_dict(self):
 
+        d= {
+            "id" : self.id,
+            "name":self.name,
+        }
+        if hasattr(self, "email"):
+            d["email"] = self.email
+        if hasattr(self, "email"):
+            d["phone"] = self.phone
+        if hasattr(self, "v1"):
+            d["vehicle_id_1"] = self.v1.get_id()
+        if hasattr(self, "v2"):
+            d["vehicle_id_2"] = self.v2.get_id()
+
+        return d
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 
     def __str__(self):
         return str(self.id) if hasattr(self, "id") else "no id"
 
-
+    def get_id(self):
+        return self.id if hasattr(self ,"id") else None
 
     def getLocation(self):
         return {"lat": float(self.location["lat"]), "lng" : float(self.location["lng"])}

@@ -3,7 +3,7 @@ from application.controllers.deliveryController import get_all_deliveries
 from application.controllers.driverController import get_all_drivers
 from application.classes.Driver import Driver
 from application.classes.Delivery import Delivery
-from flask import jsonify, Blueprint, request
+from flask import jsonify, Blueprint, request, session
 import application.decorators.sessionDecorator as sessionDecorator
 import datetime
 
@@ -28,6 +28,20 @@ def sort_distances(distances:list):
     return sorted
 
 
+def append_suggestion(suggestions:list, driver:Driver, delivery):
+    found = False
+    for sup in suggestions:
+        if "driver" in sup and sup["driver"].get_id() == driver.get_id():
+            if not "deliveries" in sup:
+                sup["deliveries"] = []
+            sup["deliveries"].append(delivery)
+            found=True
+            break
+    if found is False:
+        suggestions.append({"driver" : driver, "deliveries":[delivery]})
+
+
+
 @sessionDecorator.required_user("admin")
 @assignment_blueprint.route("/api/assignment", methods=['POST'])
 def suppose_assignment():
@@ -38,24 +52,17 @@ def suppose_assignment():
         "conditions" :  {
             # "start" : datetime.datetime(now.year,now.month,now.day,0,0,0).strftime("%Y-%m-%d %H:%M:%S"),
             # "end" : (datetime.datetime(now.year,now.month,now.day,0,0,0) + datetime.timedelta(days=1, seconds=-1)).strftime("%Y-%m-%d %H:%M:%S"),
-            "state" : "not taken"
+            "state" : "not assigned"
         }
     }
 
-    deliveries = get_all_deliveries(cond , return_obj=True, get_locations=True)
+    deliveries = get_all_deliveries(company_id=session["user"]["company_id"], conditions=cond , return_obj=True, get_locations=True)
 
     # import drivers
-    drivers = get_all_drivers(return_obj=True, vehicles=True)
+    drivers = get_all_drivers(session["user"]["company_id"], return_obj=True, vehicles=True)
 
 
-    carlow = { "lat":52.835289, "lng" : -6.925577}
-    dublin = { "lat":53.292133, "lng" : -6.245915}
-
-    distance = Location.getDistance(carlow, dublin)
-
-
-    supposition = {}
-    maps = []
+    suggestions = []
     no_registered = []
 
     for delivery in deliveries:
@@ -66,7 +73,7 @@ def suppose_assignment():
             if is_assignable(driver, delivery):
                 distance = Location.getDistance(delivery.getSenderLocation(), driver.getLocation())
                 if best_distance is not None:
-                    if distance["distance"]< best_distance["distance"] :
+                    if distance["distance"]["value"]< best_distance["distance"]["value"] :
                         best_distance = distance
                         best_driver = driver
                 else:
@@ -78,40 +85,14 @@ def suppose_assignment():
             no_registered.append(delivery)
 
         else :
-            best = {"delivery" : delivery, "distance": best_distance}
-
-            if not str(best_driver) in supposition:
-                    supposition[str(best_driver)] = []
-            supposition[str(best_driver)].append(best)
+            best = {"delivery" : delivery, "distance": best_distance["distance"], "duration" : best_distance["duration"]}
+            append_suggestion(suggestions, best_driver, best)
 
             #update driver position
             best_driver.update_location(**delivery.getSenderLocation())
 
 
-    #### ALGO ####
-    ## assign closest and available
-
-
-
-    #
-    # supposition = {}
-    #
-    # for node in maps:
-    #     sorted = sort_distances(node["distances"])
-    #
-    #     for driver in sorted:
-    #         if is_assignable(driver["driver"], node["delivery"]):
-    #             best = {"delivery" : node["delivery"], "driver" : driver["driver"], "distance": driver["distance"]}
-    #
-    #             if not str(driver["driver"]) in supposition:
-    #                 supposition[str(driver["driver"])] = []
-    #
-    #             supposition[str(driver["driver"])].append(best)
-    #             ## TODO need to sort deliveries order once driver get them
-    #             break
-
-
-    return supposition
+    return jsonify(suggestions=suggestions),200
 
 
 

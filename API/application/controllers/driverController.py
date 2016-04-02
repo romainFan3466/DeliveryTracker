@@ -103,7 +103,6 @@ def set_vehicle(driver_id:int):
 
     vehicles = vehicles["vehicles"]
 
-
     for k,v in vehicles.items():
 
         if v is not None:
@@ -172,8 +171,8 @@ def get(id:int):
     return jsonify(driver=driver),200
 
 
-@sessionDecorator.required_user("admin")
-def get_all_drivers(return_obj=False, vehicles=False):
+# @sessionDecorator.required_user("admin")
+def get_all_drivers(company_id:int, return_obj=False, vehicles=False):
     _sql = """
             select users.id,
             users.name,
@@ -196,7 +195,7 @@ def get_all_drivers(return_obj=False, vehicles=False):
         ON users.vehicle_id_2 = v2.id
         WHERE users.type='driver' and users.company_id = %(company_id)s ;
         """
-    company_id = session["user"]["company_id"]
+
     if vehicles is True:
         drivers_raw = db.query(_sql, {"company_id" : company_id}, multiple=True)
     else :
@@ -218,7 +217,7 @@ def get_all_drivers(return_obj=False, vehicles=False):
 @driver_blueprint.route("/api/drivers/all", methods=['GET'])
 @sessionDecorator.required_user("admin")
 def getAll(return_obj=False):
-    drivers = get_all_drivers()
+    drivers = get_all_drivers(session["user"]["company_id"])
     return jsonify(drivers=drivers),200
 
 

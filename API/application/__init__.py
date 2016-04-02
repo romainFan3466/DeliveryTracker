@@ -3,7 +3,9 @@ from flask_mail import Mail
 from application.core.DBHandler import DBHandler
 from flask.ext.cors import CORS
 import os
-
+from simplejson import JSONEncoder
+from application.classes.Delivery import Delivery
+from application.classes.Driver import Driver
 app = Flask(__name__)
 cors = CORS(app, resources=r'/*', origins="http://127.0.0.1:*", allow_headers="Content-Type", supports_credentials=True)
 # cors = CORS(app)
@@ -35,6 +37,21 @@ app.config.update(
     GOOGLE_MAPS_KEY = "AIzaSyBZjQHj564q5uyAyWNyh7cK6heAMoVZlvM",
 )
 
+class CustomJSONEncoder(JSONEncoder):
+
+    def default(self, obj):
+        try:
+            if isinstance(obj, Delivery) or isinstance(obj, Driver):
+                return obj.to_dict()
+            iterable = iter(obj)
+        except TypeError:
+            pass
+        else:
+            return list(iterable)
+        return JSONEncoder.default(self, obj)
+
+app.json_encoder = CustomJSONEncoder
+
 
 ### INSTANCES DECLARATION ###
 mail = Mail(app)
@@ -48,7 +65,7 @@ from application.controllers.driverController import driver_blueprint
 from application.controllers.deliveryController import delivery_blueprint
 from application.controllers.vehicleController import vehicle_blueprint
 from application.controllers.assignmentController import assignment_blueprint
-
+from application.controllers.mockController import mock_blueprint
 ### BLUEPRINTS LOADING ###
 app.register_blueprint(customer_blueprint)
 app.register_blueprint(authentication_blueprint)
@@ -56,6 +73,7 @@ app.register_blueprint(vehicle_blueprint)
 app.register_blueprint(driver_blueprint)
 app.register_blueprint(delivery_blueprint)
 app.register_blueprint(assignment_blueprint)
+app.register_blueprint(mock_blueprint)
 
 
 

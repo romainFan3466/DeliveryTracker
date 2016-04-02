@@ -10,7 +10,9 @@ class TestBlueprintDriver:
         "driver" : {
             "name" : "Romain",
             "email" : "romain@test.ie",
-            "phone" : "5464654645"
+            "phone" : "5464654645",
+            "vehicle_id_1" : 1,
+            "vehicle_id_2" : 4
         }
     }
 
@@ -246,7 +248,9 @@ class TestBlueprintDriver:
             "email": "romain@test.ie",
             "phone" : "5464654645",
             "location_lat" : 12.46666,
-            "location_lng" : 13.46666
+            "location_lng" : 13.46666,
+            "vehicle_id_1" : 1,
+            "vehicle_id_2" : 4
         }
         driver = {
             "id" : 2,
@@ -256,7 +260,9 @@ class TestBlueprintDriver:
             "location": {
                     "lat": 12.46666,
                     "lng": 13.46666
-                }
+                },
+            "vehicle_id_1" : 1,
+            "vehicle_id_2" : 4
         }
         mocker.patch.object(DBHandler, 'select', return_value=_sql)
         res = client.get(url_for('driver.get', id=12))
@@ -303,7 +309,9 @@ class TestBlueprintDriver:
             "email": "romain@test.ie",
             "phone": "5464654645",
             "location_lat": Decimal(12.46666),
-            "location_lng": Decimal(13.46666)
+            "location_lng": Decimal(13.46666),
+            "vehicle_id_1" : 1,
+            "vehicle_id_2" : 4
         }]
         driver = {
             "id": 2,
@@ -313,7 +321,9 @@ class TestBlueprintDriver:
             "location": {
                 "lat": Decimal(12.46666),
                 "lng": Decimal(13.46666)
-            }
+            },
+            "vehicle_id_1" : 1,
+            "vehicle_id_2" : 4
         }
 
         mocker.patch.object(DBHandler, "select", return_value=_sql)
@@ -334,32 +344,181 @@ class TestBlueprintDriver:
                 "company_id": 2
             }
 
+        from application.classes.Driver import Driver
         _sql = [{
             "id": 2,
             "name": "Romain",
             "email": "romain@test.ie",
             "phone": "5464654645",
             "location_lat": Decimal(12.46666),
-            "location_lng": Decimal(13.46666)
+            "location_lng": Decimal(13.46666),
+            "vehicle_id_1" : 1,
+            "vehicle_id_2" : 4,
+            "v1_weight" : 34,
+            "v1_area" :  1.4,
+            "v1_max_weight" : 3400,
+            "v1_max_area" :  41.4,
+            "v2_weight" : 567,
+            "v2_area" :  13.4,
+            "v2_max_weight" : 3400,
+            "v2_max_area" :  41.3,
         }]
-        driver = {
-            "id": 2,
-            "name": "Romain",
-            "email": "romain@test.ie",
-            "phone": "5464654645",
-            "location": {
-                "lat": Decimal(12.46666),
-                "lng": Decimal(13.46666)
-            }
-        }
 
-        from application.controllers.driverController import getAll
-        mocker.patch.object(DBHandler, "select", return_value=_sql)
-        res = getAll(return_obj=True)
-        assert "drivers" in res.json
-        assert isinstance(res.json["drivers"], list)
-        assert len(res.json["drivers"]) == 1
-        assert res.json["drivers"][0] == {"driver":driver}
+        v1 = {
+                            "id" : 1,
+                            "registration" : "",
+                            "type" : "",
+                            "area" : 1.4,
+                            "weight" : 34,
+                            "max_area" : 41.4,
+                            "max_weight" : 3400,
+                        }
+
+        v2 = {
+                            "id" : 1,
+                            "registration" : "",
+                            "type" : "",
+                            "area" : 1.4,
+                            "weight" : 34,
+                            "max_area" : 41.4,
+                            "max_weight" : 3400,
+                        }
+        driver = Driver(_sql[0])
+
+        from application.controllers.driverController import get_all_drivers
+        mocker.patch.object(DBHandler, "query", return_value=_sql)
+        res = get_all_drivers(2, return_obj=True, vehicles=True)
+        assert isinstance(res , list)
+        assert len(res) == 1
+        assert res[0] == driver
+        mocker.stopall()
+
+
+############## UPDATE LOCATION ###############
+    def test_updateLocation_unauthorized(self, client):
+        res = client.put(url_for("driver.updateLocation"))
+        assert res.status_code == 401
+        assert res.json == {"info": "Unauthorized access"}
+
+
+    def test_updateLocation_wrong_geocord(self, client):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "driver",
+                "company_id": 2
+            }
+        data = {"location" : {"lat" : 98.3, "lng" : -200.3}}
+        res = client.put(url_for("driver.updateLocation"), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 400
+
+
+    def test_updateLocation_success(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "driver",
+                "company_id": 2
+            }
+        data = {"location" : {"lat" : 28.3, "lng" : -120.3}}
+        mocker.patch.object(DBHandler, "update", return_value=True)
+        res = client.put(url_for("driver.updateLocation"), data=json.dumps(data), content_type='application/json')
         assert res.status_code == 200
         mocker.stopall()
 
+
+############## SET VEHICLE ###############
+    def test_set_vehicle_unauthorized(self, client):
+        res = client.put(url_for("driver.set_vehicle", driver_id=1))
+        assert res.status_code == 401
+        assert res.json == {"info": "Unauthorized access"}
+
+
+    def test_set_vehicle_driver_not_found(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        mocker.patch.object(DBHandler, "is_existing", return_value=False)
+        data = {"vehicles" : {"v1" : 2}}
+        res = client.put(url_for("driver.set_vehicle", driver_id=12), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 404
+        assert res.json == {"info": "Driver not found"}
+        mocker.stopall()
+
+
+    def test_set_vehicle_error_input(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+        mocker.patch.object(DBHandler, "is_existing", return_value=True)
+        data = {"vehicles" : {"v1" : "2"}}
+        res = client.put(url_for("driver.set_vehicle", driver_id=12), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 400
+        assert "errors" in res.json
+        mocker.stopall()
+
+
+    def test_set_vehicle_vehicle_not_found(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
+        def is_existing(table, **kwargs):
+            return table =="users"
+
+        mocker.patch.object(DBHandler, "is_existing", side_effect=is_existing)
+        data = {"vehicles" : {"v1" : 2, "v2" : None}}
+        res = client.put(url_for("driver.set_vehicle", driver_id=12), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 404
+        assert res.json["info"] == "Vehicle v1 not found"
+        mocker.stopall()
+
+
+    def test_set_vehicle_already_taken(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
+        def is_existing(table, **kwargs):
+            return table =="users"
+
+        mocker.patch.object(DBHandler, "is_existing", return_value=True)
+        mocker.patch.object(DBHandler, "query", return_value=None)
+        data = {"vehicles" : {"v1" : 2, "v2" : None}}
+        res = client.put(url_for("driver.set_vehicle", driver_id=12), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 400
+        assert res.json["info"] == "Vehicle v1 already taken"
+        mocker.stopall()
+
+
+
+    def test_set_vehicle_success(self, client, mocker):
+        with client.session_transaction() as sess:
+            sess["user"] = {
+                "id": 3,
+                "type": "admin",
+                "company_id": 2
+            }
+
+        def is_existing(table, **kwargs):
+            return table == "users"
+
+        mocker.patch.object(DBHandler, "is_existing", return_value=True)
+        mocker.patch.object(DBHandler, "query", return_value=True)
+        mocker.patch.object(DBHandler, "update", return_value=True)
+        data = {"vehicles": {"v1": 2, "v2": None}}
+        res = client.put(url_for("driver.set_vehicle", driver_id=12), data=json.dumps(data), content_type='application/json')
+        assert res.status_code == 200
+        mocker.stopall()

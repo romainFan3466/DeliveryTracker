@@ -21,6 +21,14 @@ class Vehicle:
                 setattr(self,k,v)
 
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+
+    def get_id(self):
+       return self.id if hasattr(self ,"id") else None
+
+
     def get_free_area(self):
         if hasattr(self, "area") and hasattr(self, "max_area"):
             free = self.max_area - self.area

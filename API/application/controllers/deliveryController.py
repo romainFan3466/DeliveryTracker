@@ -6,11 +6,11 @@ import application.decorators.sessionDecorator as sessionDecorator
 
 delivery_blueprint = Blueprint('delivery', __name__, )
 
-@sessionDecorator.required_user()
-def get_all_deliveries(conditions:dict, return_obj=False, get_locations=False):
+
+def get_all_deliveries(company_id:int, conditions:dict, return_obj=False, get_locations=False, driver_id:int=None):
     conditions = Delivery.parse(conditions, "getAll")
     if "errors" in conditions:
-        return jsonify(errors=conditions["errors"]),400
+        return conditions
 
     cond = ""
     conditions = conditions["conditions"] if "conditions" in conditions else conditions
@@ -24,7 +24,6 @@ def get_all_deliveries(conditions:dict, return_obj=False, get_locations=False):
             cond += " AND "
         cond += "deliveries.customer_id = " + str(conditions["customer_id"])
 
-
     if "state" in conditions:
         if cond != "":
             cond += " AND "
@@ -34,13 +33,12 @@ def get_all_deliveries(conditions:dict, return_obj=False, get_locations=False):
         cond += " AND "
 
         # Driver session
-    cond += "deliveries.company_id=" + str(session["user"]["company_id"]) + " "
+    cond += "deliveries.company_id=" + str(company_id) + " "
 
-    if session["user"]["type"] == "driver":
-        cond += "AND deliveries.driver_id=" + str(session["user"]["id"]) + " "
+    if driver_id is not None:
+        cond += "AND deliveries.driver_id=" + str(driver_id) + " "
 
-
-    query = """ SELECT deliveries.* , customers.name AS customer_name"""
+    query = """ SELECT deliveries.* , delivery_orders.num_order, customers.name AS customer_name"""
 
     extra_inner = ""
     if get_locations is True:
@@ -55,9 +53,11 @@ def get_all_deliveries(conditions:dict, return_obj=False, get_locations=False):
           ON deliveries.receiver_id=receivers.id
       """
 
-    query+= """ FROM deliveries""" + """
+    query+= """ FROM deliveries
       INNER JOIN customers
-      ON deliveries.customer_id=customers.id """ + extra_inner + """
+      ON deliveries.customer_id=customers.id
+      INNER JOIN delivery_orders
+      ON deliveries.id=delivery_orders.delivery_id """+ extra_inner + """
       WHERE """ + cond + " ;"
 
     deliveries_raw = db.query(query)
@@ -75,6 +75,11 @@ def get_all_deliveries(conditions:dict, return_obj=False, get_locations=False):
 
     return deliveries
 
+
+def insert_at_last_order(delivery_id, date, driver_id):
+    last = db.select(table="delivery_orders", selected_columns=("MAX(num_order)",), conditions={"date":date,"driver_id": driver_id}, multiple=False)
+    last = last["MAX(num_order)"]+1 if isinstance(last["MAX(num_order)"], int) else 1
+    db.insert(table="delivery_orders", params={"num_order": last, "date":date, "delivery_id": delivery_id, "driver_id":driver_id })
 
 
 @delivery_blueprint.route("/api/deliveries", methods=['POST'])
@@ -107,7 +112,8 @@ def create():
 @delivery_blueprint.route("/api/deliveries/<id>", methods=['PUT'])
 @sessionDecorator.required_user("admin")
 def update(id: int):
-    if not db.is_existing(table="deliveries", conditions={"id": id}):
+    d= db.select(table="deliveries", conditions={"id": id}, multiple=False)
+    if d is None:
         return jsonify(info="Delivery not found"), 404
     
     args = request.get_json(force=True)
@@ -117,6 +123,7 @@ def update(id: int):
     delivery = delivery["delivery"]
 
     delivery["company_id"] = session["user"]["company_id"]
+
 
     # customer_id
     if "customer_id" in delivery:
@@ -133,10 +140,13 @@ def update(id: int):
         if not db.is_existing(table="customers", conditions={"id": delivery["receiver_id"]}):
             return jsonify(info="Receiver not found"), 404
 
-    
-    db.update(table="deliveries", params=delivery, conditions={"id": id})
-    return jsonify(info="Delivery updated successfully"), 200
+    if "date_due" in delivery and d["driver_id"] is not None:
+        db.delete(table="delivery_orders", conditions={"delivery_id": id}) # delete old date
+        insert_at_last_order(id, delivery["date_due"], d["driver_id"])
 
+    db.update(table="deliveries", params=delivery, conditions={"id": id})
+
+    return jsonify(info="Delivery updated successfully"), 200
 
 
 @delivery_blueprint.route("/api/deliveries/<id>", methods=['DELETE'])
@@ -165,7 +175,7 @@ def get(id: int):
     if delivery is None:
         return jsonify(info="Delivery not found"), 404
 
-    d= {"delivery": Delivery(delivery).to_dict()}
+    d= Delivery(delivery).to_dict()
     return jsonify(delivery=d), 200
 
 
@@ -173,8 +183,12 @@ def get(id: int):
 @sessionDecorator.required_user()
 def getAll():
     args = request.get_json(force=True)
-    deliveries = get_all_deliveries(args)
-    #TODO : for driver, send by order closest to farthest
+    company_id = session["user"]["company_id"]
+    driver_id = session["user"]["id"] if session["user"]["type"] == "driver" else None
+    deliveries = get_all_deliveries(company_id=company_id, conditions=args,driver_id=driver_id, get_locations=True)
+    if "errors" in deliveries:
+        return jsonify(errors=deliveries),400
+
     return jsonify(deliveries=deliveries), 200
 
 
@@ -185,11 +199,19 @@ def assign_driver(delivery_id: int, driver_id: int,):
     if not db.is_existing(table="users", conditions={"id": driver_id, "type": "driver", "company_id": company_id}):
         return jsonify(info="Driver not found"), 404
 
-    if not db.is_existing(table="deliveries", conditions={"id": delivery_id, "company_id": company_id}):
-        return jsonify(info="Delivery not found"), 404
+    def get_valid_delivery(delivery_id, company_id):
+        sql = "SELECT date_due FROM deliveries WHERE id=%(id)s AND company_id=%(company_id)s AND (state='not taken' OR state='not assigned');"
+        return db.query(sql, params={"id": delivery_id, "company_id": company_id}, multiple=False)
 
-    db.update(table="deliveries", params={"driver_id": driver_id},
+    delivery = get_valid_delivery(delivery_id, company_id)
+    if delivery is None:
+        return jsonify(info="Delivery not found or not assignable"), 404
+
+    db.update(table="deliveries", params={"driver_id": driver_id, "state":'not taken'},
               conditions={"id": delivery_id, "company_id": company_id})
+
+    insert_at_last_order(delivery_id, delivery["date_due"] , driver_id)
+
     return jsonify(info="Driver has been assigned"), 200
 
 
@@ -206,9 +228,6 @@ def update_state():
         "id": req["delivery_id"],
         "company_id": session["user"]["company_id"]
     }
-    supported_states = ["not taken", "taken", "picked up", "on way", "delivered", "canceled"]
-    if not state in supported_states:
-        return jsonify(info="unsupported states", supported_states=supported_states), 400
 
     if session["user"]["type"] == "driver":
         conditions["driver_id"] = session["user"]["id"]

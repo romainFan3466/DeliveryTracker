@@ -59,8 +59,8 @@ class Location:
                                                     destinations=(destination["lat"], destination["lng"]))
         if "status" in distance and distance["status"] == "OK":
             result = {}
-            result["distance"] = distance["rows"][0]["elements"][0]["distance"]["value"]
-            result["duration"]= distance["rows"][0]["elements"][0]["duration"]["value"]
+            result["distance"] = distance["rows"][0]["elements"][0]["distance"]
+            result["duration"]= distance["rows"][0]["elements"][0]["duration"]
             return result
         else :
             raise Exception("Error distance")

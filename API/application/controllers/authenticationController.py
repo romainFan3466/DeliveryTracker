@@ -51,5 +51,3 @@ def status():
     if "user" in session :
         return jsonify(session=session["user"])
     return jsonify(session="logout")
-
-#TODO recover password
