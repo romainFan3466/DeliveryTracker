@@ -178,8 +178,9 @@ AppModule.controller("EditDeliveryController",[
             $delivery.get(id).then(
                 function(res){
                     $scope.found = true;
-                    angular.copy(res.delivery, $scope.delivery);
-                    angular.copy(res.delivery, deliveryTemp);
+                    $scope.delivery = angular.copy(res.delivery);
+                    $scope.delivery.dateDue = $scope.delivery.dateDue.format("DD-MMMM-YYYY");
+                    deliveryTemp = angular.copy($scope.delivery);
                     getCustomers();
                     getDrivers();
                     $scope.editor = false;
@@ -195,6 +196,12 @@ AppModule.controller("EditDeliveryController",[
             );
         };
 
+
+        $scope.open = function ($event) {
+            $event.preventDefault();
+            $event.stopPropagation();
+            $scope.opened = !$scope.opened;
+        };
 
         $scope.onSelectSender = function (item, model, label) {
             $scope.delivery.senderId = item.id;

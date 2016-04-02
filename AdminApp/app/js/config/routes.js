@@ -17,9 +17,8 @@ AppModule.config(['$routeProvider', function ($routeProvider) {
         {url: "/deliveries/create", templateUrl: "templates/delivery/create.delivery.html", controller : "CreateDeliveryController"},
         {url: "/deliveries/edit", templateUrl: "templates/delivery/edit.delivery.html", controller : "EditDeliveryController"},
         {url: "/deliveries/edit/:deliveryId", templateUrl: "templates/delivery/edit.delivery.html", controller : "EditDeliveryController"},
-        //{url: "/deliveries/list", templateUrl: "templates/delivery/list.delivery.html", controller : "ListDeliveryController"},
         {url: "/deliveries/list", templateUrl: "templates/delivery/list.bis.delivery.html", controller : "V2ListDeliveryController"},
-        {url: "/deliveries/assign", templateUrl: "templates/delivery/assign.delivery.html", controller : "AssignDeliveryController"},
+        {url: "/deliveries/suggest", templateUrl: "templates/delivery/suggestion.delivery.html", controller : "SuggestAssignmentController"},
         
         {url: "/drivers/create", templateUrl: "templates/driver/create.driver.html", controller : "CreateDriverController"},
         {url: "/drivers/edit", templateUrl: "templates/driver/edit.driver.html", controller : "EditDriverController"},

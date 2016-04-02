@@ -10,6 +10,7 @@
                 <li><strong>Weight : </strong>{{delivery.weight}} kg</li>
                 <li><strong>Dimensions : </strong>{{delivery.area}} m²</li>
                 <li><strong>Information : </strong>{{delivery.infor}}</li>
+                <li><strong>Due : </strong>{{delivery.dateDue.format("DD-MM-YYYY")}}</li>
                 <br>
                 <li
                         ng-class="{'text-success' : delivery.state=='delivered',

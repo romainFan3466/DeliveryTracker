@@ -1,6 +1,6 @@
 AppModule.factory('$delivery',[
-    "$http", "DeliveryMapper", "$q", "$log", "Config",
-    function ($http, DeliveryMapper, $q, $log, Config) {
+    "$http", "DeliveryMapper", "$q", "$log", "Config","SuggestionMapper",
+    function ($http, DeliveryMapper, $q, $log, Config, SuggestionMapper) {
 
         var _create = function (data) {
             var deferred = $q.defer();
@@ -97,12 +97,34 @@ AppModule.factory('$delivery',[
 
         };
 
+
+        var _suggest = function(){
+            var deferred = $q.defer();
+            $http
+                .post(Config.baseUrl + "/assignment", {})
+                .success(function (res) {
+                    result  = [];
+                    if(angular.isDefined(res.suggestions)){
+                        angular.forEach(res.suggestions, function(suggestion){
+                            result.push(new SuggestionMapper(suggestion))
+                        })
+                    }
+                    deferred.resolve({suggestions:result});
+                })
+                .error(function (res) {
+                    deferred.reject(res);
+                });
+            return deferred.promise
+
+        };
+
         return {
             create : _create,
             update : _update,
             get : _get,
             getAll : _getAll,
-            assign : _assign
+            assign : _assign,
+            suggest : _suggest
         }
     }
 ]);

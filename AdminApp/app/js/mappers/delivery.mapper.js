@@ -16,7 +16,8 @@ AppModule.factory('DeliveryMapper', [
             "info",
             "content",
             "state",
-            "canceled"
+            "canceled",
+            "numOrder"
         ];
 
 
@@ -42,7 +43,7 @@ AppModule.factory('DeliveryMapper', [
 
                     if (args.indexOf(_key) != -1) {
                         if(_key == "dateCreated" || _key == "dateDue"){
-                            self[_key] = $filter('date')(value, "yyyy-MM-dd HH:mm:ss");
+                            self[_key] = moment(value);
                         }
                         else if(_key == "area" || _key == "weight" ){
                             if(value !=null){
@@ -61,9 +62,17 @@ AppModule.factory('DeliveryMapper', [
         };
 
         DeliveryMapper.prototype.queryFormat = function () {
-            return humps.decamelizeKeys(this);
-
+            var d = angular.copy(this);
+            if(d.dateDue){
+                d.dateDue = d.dateDue.format("YYYY-MM-DD HH:mm:ss");
+            }
+            if(d.dateCreated){
+                d.dateCreated = d.dateCreated.format("YYYY-MM-DD HH:mm:ss");
+            }
+            return humps.decamelizeKeys(d);
         };
+
+
 
         return DeliveryMapper;
     }

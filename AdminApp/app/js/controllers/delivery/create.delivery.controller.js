@@ -21,6 +21,9 @@ AppModule.controller("CreateDeliveryController",[
                 delivery: ""
             };
 
+            $scope.sender = {};
+            $scope.receiver = {};
+
             $scope.now = new Date();
 
             $scope.delivery = {
@@ -55,7 +58,6 @@ AppModule.controller("CreateDeliveryController",[
         };
 
 
-
         $scope.createDelivery = function(){
             $scope.delivery.dateCreated = new Date();
 
@@ -78,6 +80,7 @@ AppModule.controller("CreateDeliveryController",[
                 }
             );
         };
+
 
         $scope.open = function ($event) {
             $event.preventDefault();

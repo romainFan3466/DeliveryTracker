@@ -161,6 +161,36 @@
 
         <div class="row">
             <div class="form-group col-md-offset-3 col-md-6">
+                <label for="InputType">Due</label>
+
+                <p class="input-group">
+                    <input type="text" class="form-control"
+                           uib-datepicker-popup="dd-MMMM-yyyy"
+                           ng-model="delivery.dateDue"
+                           id="inputDateFrom"
+                           is-open="opened"
+                           datepicker-options="dateOptions"
+                           date-disabled="disabled(date, mode)"
+                           ng-required="true"
+                           min-date="{{now}}"
+                           close-text="Close"
+                           ng-disabled="!editor"
+                           required>
+              <span class="input-group-btn">
+                <button type="button"
+                        class="btn btn-default"
+                        ng-click="open($event)"
+                        ng-disabled="!editor">
+                    <i class="glyphicon glyphicon-calendar"></i>
+                </button>
+              </span>
+                </p>
+            </div>
+
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
                 <label for="InputType">Delivery Content</label>
                 <input type="text"
                        ng-model="delivery.content"

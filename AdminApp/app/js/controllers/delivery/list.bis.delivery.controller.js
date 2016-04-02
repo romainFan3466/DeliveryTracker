@@ -83,7 +83,7 @@ AppModule.controller("V2ListDeliveryController", [
                         var event = {
                             title: delivery.customerName +" : "+ delivery.content ,
                             type: 'info',
-                            startsAt:new Date(delivery.dateDue),
+                            startsAt: delivery.dateDue.toDate(),
                             id : delivery.id
                         };
                         $scope.vm.events.push(event);

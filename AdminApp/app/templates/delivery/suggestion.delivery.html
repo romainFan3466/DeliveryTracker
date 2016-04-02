@@ -1,0 +1,99 @@
+<div class="container-fluid ng-cloak" ng-cloak>
+    <div class="row row-lg-space">
+        <h1 class="text-center">Suggest Assignments</h1>
+    </div>
+
+    <form role="form"
+          ng-submit="suggest()"
+          name="form">
+
+        <div class="row">
+            <div class="form-group col-md-offset-3 col-md-6">
+                <label for="inputDateFrom">Due</label>
+
+                <p class="input-group">
+                    <input type="text" class="form-control"
+                           uib-datepicker-popup="dd-MMMM-yyyy"
+                           ng-model="dateSearch"
+                           id="inputDateFrom"
+                           is-open="opened"
+                           datepicker-options="dateOptions"
+                           date-disabled="disabled(date, mode)"
+                           ng-required="true"
+                           min-date="{{now}}"
+                           close-text="Close"
+                           required>
+              <span class="input-group-btn">
+                <button type="button"
+                        class="btn btn-default"
+                        ng-click="open($event)">
+                    <i class="glyphicon glyphicon-calendar"></i>
+                </button>
+              </span>
+                </p>
+            </div>
+        </div>
+
+
+
+    <div class="center-block text-center">
+            <input type="submit" class="btn btn-primary" value="Get Suggestions">
+    </div>
+
+
+    </form>
+
+    <div class="row row-space" ng-repeat="suggestion in suggestions" ng-show="found==true">
+        <h2 class="well text-center">Driver : {{suggestion.driver.name}} </h2>
+        <div class="col-md-offset-2 col-md-8">
+
+            <table class="table table-hover">
+                <tr>
+                    <th>#</th>
+                    <th>ID</th>
+                    <th>Distance</th>
+                    <th>Duration</th>
+                </tr>
+
+                <tr ng-repeat="delivery in suggestion.deliveries" ng-click="showDelivery(delivery.delivery)">
+                    <td>{{$index + 1}}</td>
+                    <td>{{delivery.delivery.id}}</td>
+                    <td>{{delivery.distance.text}}</td>
+                    <td>{{delivery.duration.text}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="row row-space">
+        <div class="center-block text-center" ng-show="found==true && suggestions.length > 0">
+            <button class="btn btn-success"
+                    ng-click="assign(suggestions)">
+                Assign
+            </button>
+        </div>
+    </div>
+
+
+    <div class="row row-space">
+        <div class="center-block text-center">
+            <span ng-show="success" class="alert alert-success">
+                <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                Delivery created successfully
+            </span>
+
+            <span ng-show="error.value && !success" class="alert alert-danger">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                Error : {{error.info}}
+            </span>
+
+            <span ng-show="suggestions.length == 0" class="alert alert-warning">
+                <span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span>
+                No unassigned deliveries are available for this date.
+            </span>
+        </div>
+    </div>
+
+
+    <spinner loading="loading"></spinner>
+</div>
