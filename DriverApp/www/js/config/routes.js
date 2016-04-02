@@ -40,7 +40,8 @@ AppModule.config(["$stateProvider", "$urlRouterProvider",
                     url: '/deliveries/progress',
                     views: {
                         'menuContent': {
-                            templateUrl: 'templates/progress.deliveries.html'
+                            templateUrl: 'templates/progress.deliveries.html',
+                            controller : "DeliveriesProgressController"
                         }
                     }
                 }
@@ -51,7 +52,8 @@ AppModule.config(["$stateProvider", "$urlRouterProvider",
                     url: '/deliveries/incoming',
                     views: {
                         'menuContent': {
-                            templateUrl: 'templates/incoming.deliveries.html'
+                            templateUrl: 'templates/incoming.deliveries.html',
+                            controller : "DeliveriesIncomingController"
                         }
                     }
                 }

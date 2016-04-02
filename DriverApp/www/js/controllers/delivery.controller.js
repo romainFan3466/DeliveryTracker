@@ -158,6 +158,7 @@ AppModule.controller("DeliveryController", [
                 function (res) {
                     $scope.error.value = false;
                     $scope.delivery = res.delivery;
+                    $scope.delivery.dateDue = new Date($scope.delivery.dateDue);
                     $ionicLoading.hide();
                 },
                 function (res) {

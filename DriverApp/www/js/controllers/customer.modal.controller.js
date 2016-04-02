@@ -16,5 +16,6 @@ AppModule.controller('CustomerModalController', [
                 }
             );
         };
+
     }
 ]);

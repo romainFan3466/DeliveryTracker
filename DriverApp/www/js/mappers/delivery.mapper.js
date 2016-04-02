@@ -16,7 +16,8 @@ AppModule.factory('DeliveryMapper', [
             "info",
             "content",
             "state",
-            "canceled"
+            "canceled",
+            "numOrder"
         ];
 
 

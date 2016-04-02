@@ -1,7 +1,5 @@
 <ion-view view-title="Progess">
     <ion-content>
-        <h1>Search</h1>
-
         <div ng-show="error.value" class="padding">
             <div class="card text-center">
                 <div class="item item-text-wrap card-danger">
@@ -9,5 +7,11 @@
                 </div>
             </div>
         </div>
+
+        <a ng-repeat="delivery in deliveries | deliveryOrder : true " class="item item-icon-left" ng-href="#/app/deliveries/id/{{delivery.id}}">
+            <i class="icon fa fa-circle energized"></i>
+            {{delivery.customerName}}: {{delivery.content}} <small>({{delivery.state}})</small>
+            <span class="item-note">#{{delivery.numOrder}}</span>
+        </a>
     </ion-content>
 </ion-view>

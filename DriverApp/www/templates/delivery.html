@@ -102,12 +102,13 @@
             <div class="item"><strong>Content : </strong>{{delivery.content}}</div>
             <div class="item"><strong>Weight : </strong>{{delivery.weight}} kg</div>
             <div class="item"><strong>Dimensions : </strong>{{delivery.area}} m²</div>
-            <div class="item"><strong>Information : </strong>{{delivery.infor}}</div>
-            <div class="item"><strong>Status : </strong>{{delivery.status}}</div>
+            <div class="item"><strong>Information : </strong>{{delivery.info}}</div>
+            <div class="item"><strong>Due : </strong>{{delivery.dateDue| date : 'yyyy-MM-dd'}}</div>
+            <div class="item"><strong>Status : </strong>{{delivery.state}}</div>
             <div class="item item-divider"></div>
 
             <div class="item" ng-click="openCustomer(delivery.customerId, 'Customer')">
-                <strong>Customer : </strong>{{delivery.customerName}}
+                <strong>Customer : {{delivery.customerName}}</strong>{{delivery.customerName}}
                 <span class="item-note">Details</span>
             </div>
             <div class="item" ng-click="openCustomer(delivery.receiverId, 'Sender')">
@@ -120,15 +121,6 @@
             </div>
 
         </div>
-
-        <a class="button button-full button-stable"
-           href="geo:53.33196,6.92583?q=53.33196,6.92583(motherfucker)"
-           ng-click="$event.stopPropagation()"
-           target="_blank">
-            Goo
-        </a>
-
-
 
     </ion-content>
 </ion-view>

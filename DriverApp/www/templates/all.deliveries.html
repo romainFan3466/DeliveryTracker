@@ -8,7 +8,7 @@
             </div>
         </div>
 
-        <a ng-repeat="delivery in deliveries" class="item item-icon-left" ng-href="#/app/deliveries/id/{{delivery.id}}">
+        <a ng-repeat="delivery in deliveries | deliveryOrder " class="item item-icon-left" ng-href="#/app/deliveries/id/{{delivery.id}}">
             <i class="icon fa fa-circle"
                     ng-class="{
                         positive : !delivery.canceled && isState('incoming',delivery.state),
@@ -17,7 +17,7 @@
                         assertive : delivery.canceled
                                 }"></i>
             {{delivery.customerName}}: {{delivery.content}} <small ng-show="isState('progress', delivery.state)">({{delivery.state}})</small>
-            <span class="item-note">#{{$index + 1}}</span>
+            <span class="item-note">#{{delivery.numOrder}}</span>
         </a>
 
     </ion-content>

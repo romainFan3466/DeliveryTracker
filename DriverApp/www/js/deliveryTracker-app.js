@@ -108,8 +108,8 @@ AppModule.run(["$rootScope", "$ionicPlatform", "$state", "$log", "$cordovaDialog
     }
 ]);
 AppModule.constant('Config', {
-    baseUrl : "http://deliverytracker.romainfanara.com/api"
-    //baseUrl : "http://127.0.0.1:5000/api"
+    //baseUrl : "http://deliverytracker.romainfanara.com/api"
+    baseUrl : "http://127.0.0.1:5000/api"
 });
 
 AppModule.directive('googleplace', ["$log", function($log) {
@@ -300,7 +300,8 @@ AppModule.factory('DeliveryMapper', [
             "info",
             "content",
             "state",
-            "canceled"
+            "canceled",
+            "numOrder"
         ];
 
 
@@ -1092,6 +1093,7 @@ AppModule.controller('CustomerModalController', [
                 }
             );
         };
+
     }
 ]);
 
@@ -1167,21 +1169,31 @@ AppModule.controller("DebugController", [
     }]);
 
 AppModule.controller("DeliveriesAllController", [
-    "$scope", "$log", "$delivery","$ionicLoading","$timeout",
-    function ($scope, $log, $delivery, $ionicLoading, $timeout) {
+    "$scope", "$log", "$delivery","$ionicLoading","$timeout","$filter",
+    function ($scope, $log, $delivery, $ionicLoading, $timeout, $filter) {
+
+        /*
+        TODO : Implement : today date for all getAll
+         */
 
         var _init = function () {
             $scope.error = {
                 value: false,
                 info: ""
             };
-
             $scope.deliveries = [];
         };
 
 
         var _getAll = function () {
-            $delivery.getAll().then(
+            var d = new Date();
+            var start = new Date(d.getFullYear(), d.getMonth(), d.getDate(),0,0,0,0);
+            var end = new Date(d.getFullYear(), d.getMonth(), d.getDate(),23,59,59,0);
+            cond = {
+                start : $filter("date")(start, "yyyy-MM-dd HH:mm:ss"),
+                end :$filter("date")(end , "yyyy-MM-dd HH:mm:ss")
+            };
+            $delivery.getAll(cond).then(
                 function (res) {
                     $scope.error.value = false;
                     $scope.deliveries = res.deliveries;
@@ -1205,7 +1217,7 @@ AppModule.controller("DeliveriesAllController", [
                     result = deliveryState == "not taken";
                     break;
                 case "progress":
-                    valid = ["taken", "picked up", "on way"];
+                    var valid = ["taken", "picked up", "on way"];
                     result = valid.indexOf(deliveryState)!=-1;
                     break;
                 case "delivered":
@@ -1253,14 +1265,112 @@ AppModule.controller("DeliveriesController", [
 
     }]);
 AppModule.controller("DeliveriesIncomingController", [
-    "$scope", "$log", "$delivery","$ionicLoading",
-    function ($scope, $log, $delivery, $ionicLoading) {
-        
+    "$scope", "$log", "$delivery","$ionicLoading","$timeout","$filter",
+    function ($scope, $log, $delivery, $ionicLoading, $timeout, $filter) {
+
+         var _init = function () {
+            $scope.error = {
+                value: false,
+                info: ""
+            };
+
+            $scope.deliveries = [];
+        };
+
+
+        var _getAll = function () {
+            var d = new Date();
+            var start = new Date(d.getFullYear(), d.getMonth(), d.getDate(),0,0,0,0);
+            var end = new Date(d.getFullYear(), d.getMonth(), d.getDate(),23,59,59,0);
+            cond = {
+                start : $filter("date")(start, "yyyy-MM-dd HH:mm:ss"),
+                end :$filter("date")(end , "yyyy-MM-dd HH:mm:ss"),
+                state : "not taken"
+            };
+            
+            $delivery.getAll(cond).then(
+                function (res) {
+                    $scope.error.value = false;
+                    $scope.deliveries = res.deliveries;
+                    $ionicLoading.hide();
+                },
+                function (res) {
+                    $ionicLoading.hide();
+                    $scope.error = {
+                        value: true,
+                        info: res.info || ""
+                    };
+                }
+            )
+        };
+
+         $scope.$on('$ionicView.enter', function () {
+            _init();
+            $ionicLoading.show();
+            $timeout(
+                function () {
+                    _getAll();
+                },
+                1000
+            );
+        });
+
     }
 ]);
 AppModule.controller("DeliveriesProgressController", [
-    "$scope", "$log", "$delivery","$ionicLoading",
-    function ($scope, $log, $delivery, $ionicLoading) {
+    "$scope", "$log", "$delivery", "$ionicLoading", "$timeout","$filter",
+    function ($scope, $log, $delivery, $ionicLoading, $timeout,$filter) {
+
+        var _init = function () {
+            $scope.error = {
+                value: false,
+                info: ""
+            };
+            $scope.deliveries = [];
+        };
+
+
+        var _getAllFromState = function (state) {
+            var d = new Date();
+            var start = new Date(d.getFullYear(), d.getMonth(), d.getDate(),0,0,0,0);
+            var end = new Date(d.getFullYear(), d.getMonth(), d.getDate(),23,59,59,0);
+            cond = {
+                start : $filter("date")(start, "yyyy-MM-dd HH:mm:ss"),
+                end :$filter("date")(end , "yyyy-MM-dd HH:mm:ss"),
+                state : state
+            };
+            $delivery.getAll(cond).then(
+                function (res) {
+                    $scope.error.value = false;
+                    $scope.deliveries = $scope.deliveries.concat(res.deliveries);
+                },
+                function (res) {
+                    $scope.error = {
+                        value: true,
+                        info: res.info || ""
+                    };
+                }
+            );
+        };
+
+
+        var _getAll = function () {
+            var progress_states = ["taken", "picked up", "on way"];
+            $ionicLoading.show();
+            angular.forEach(progress_states, _getAllFromState);
+            $ionicLoading.hide();
+        };
+
+        $scope.$on('$ionicView.enter', function () {
+            _init();
+            $ionicLoading.show();
+            $timeout(
+                function () {
+                    _getAll();
+                },
+                1000
+            );
+        });
 
     }
 ]);
@@ -1424,6 +1534,7 @@ AppModule.controller("DeliveryController", [
                 function (res) {
                     $scope.error.value = false;
                     $scope.delivery = res.delivery;
+                    $scope.delivery.dateDue = new Date($scope.delivery.dateDue);
                     $ionicLoading.hide();
                 },
                 function (res) {
@@ -1564,6 +1675,48 @@ AppModule.controller("LoginController",[
 }]);
 
 
+AppModule.filter('deliveryOrder', [
+        "$filter",
+        function ($filter) {
+            return function (deliveries, reverse) {
+
+                deliveries = deliveries || [];
+                reverse  = angular.isDefined(reverse)? reverse : false;
+                var out = [];
+
+                //deliveries
+                var _notTaken = $filter('filter')(deliveries, {state: "not taken"}, true);
+                var _taken = $filter('filter')(deliveries, {state: "taken"}, true);
+                var _pickedUp = $filter('filter')(deliveries, {state: "picked up"}, true);
+                var _onWay = $filter('filter')(deliveries, {state: "on way"}, true);
+                var _delivered = $filter('filter')(deliveries, {state: "delivered"}, true);
+                var _canceled = $filter('filter')(deliveries, {canceled: true}, true);
+
+                //sort by numOrder
+
+
+                _notTaken = $filter('orderBy')(_notTaken, "numOrder", reverse);
+                _taken = $filter('orderBy')(_taken, "numOrder", reverse);
+                _pickedUp = $filter('orderBy')(_pickedUp, "numOrder", reverse);
+                _onWay = $filter('orderBy')(_onWay, "numOrder", reverse);
+                _delivered = $filter('orderBy')(_delivered, "numOrder", reverse);
+                _canceled = $filter('orderBy')(_canceled, "numOrder", reverse);
+                //if(reverse == true){
+                //    out = out.concat(_canceled,_delivered, _onWay, _pickedUp ,_taken, _notTaken);
+                //}
+                //else {
+                //    out = out.concat(_notTaken, _taken, _pickedUp, _onWay, _delivered, _canceled);
+                //}
+
+                out = out.concat(_notTaken, _taken, _pickedUp, _onWay, _delivered, _canceled);
+
+
+                return out;
+            }
+        }]
+);
+
+
 AppModule.filter('firstLetter', function () {
     return function (input, letter, prop) {
 
@@ -1663,7 +1816,8 @@ AppModule.config(["$stateProvider", "$urlRouterProvider",
                     url: '/deliveries/progress',
                     views: {
                         'menuContent': {
-                            templateUrl: 'templates/progress.deliveries.html'
+                            templateUrl: 'templates/progress.deliveries.html',
+                            controller : "DeliveriesProgressController"
                         }
                     }
                 }
@@ -1674,7 +1828,8 @@ AppModule.config(["$stateProvider", "$urlRouterProvider",
                     url: '/deliveries/incoming',
                     views: {
                         'menuContent': {
-                            templateUrl: 'templates/incoming.deliveries.html'
+                            templateUrl: 'templates/incoming.deliveries.html',
+                            controller : "DeliveriesIncomingController"
                         }
                     }
                 }
