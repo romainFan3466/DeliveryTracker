@@ -30,7 +30,7 @@ app.config.update(
     DB_CONFIG={
             "host": "127.0.0.1",
             "user": "root",
-            "password": "jf/b6rb",
+            "password": "",
             "database": "deliveryTracker",
     },
 
